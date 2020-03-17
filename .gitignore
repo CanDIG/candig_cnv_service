@@ -1,0 +1,7 @@
+*.pyc
+.coverage
+*.log
+.idea
+*_env
+*.db
+__pycache__b

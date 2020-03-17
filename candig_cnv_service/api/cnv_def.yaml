@@ -1,0 +1,261 @@
+
+openapi: 3.0.0
+info:
+  description: | 
+    This is an implementation for a copy number variant service for CanDIG v2
+  version: "0.1.0-oas3"
+  title: Copy Number Variant API
+  contact:
+    email: dnaidoo@bcgsc.ca
+  license:
+    name: Apache 2.0
+    url: 'http://www.apache.org/licenses/LICENSE-2.0.html'
+tags:
+  - name: admins
+    description: Secured Admin-only calls
+  - name: researchers
+    description: Operations available to regular users
+paths:
+  /cnvariant/patient:
+    get:
+      tags:
+        - researchers
+      summary: |
+        Lists all patients in the system
+      operationId: candig_cnv_service.api.operations.getPatients
+      responses:
+        '200':
+          description: List of known patientIDs 
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/patientID'
+        '400':
+          description: bad input parameter
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                code: 400
+                message: Invalid Parameter. Check Request
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                code: 500
+                message: Internal Server Error
+        
+
+  
+  /cnvariant/patient/{patientID}/sample:
+    get:
+      tags:
+        - researchers
+      summary: |
+        Lists all sampleIDs tied to a patient
+      operationId: candig_cnv_service.api.operations.getSamples
+      description: |
+        Returns a list of known samples for a specific patientID
+      parameters:
+        - in: path
+          name: patientID
+          description: Patient to be queried
+          required: true
+          schema:
+            $ref: '#/components/schemas/patientID'
+      responses:
+        '200':
+          description: List of known SampleIDs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/sampleID'
+        '400':
+          description: bad input parameter
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                code: 400
+                message: Invalid Parameter. Check Request
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                code: 500
+                message: Internal Server Error
+                
+  /cnvariant/patient/{patientID}/sample/{sampleID}:
+    get:
+      tags:
+        - researchers
+      summary: |
+        Searches for all segments within the specified region
+      operationId: candig_cnv_service.api.operations.getSegment
+      description: |
+        Passing in a patient ID, sample ID, chromosome number, start and end position will return
+        all known segments within the region.
+      parameters:
+        - in: path
+          name: patientID
+          description: Patient to be queried
+          required: true
+          schema:
+            $ref: '#/components/schemas/patientID'
+        - in: path
+          name: sampleID
+          description: Sample to be queried
+          required: true
+          schema:
+            $ref: '#/components/schemas/sampleID'
+        - in: query
+          name: chromosomeNumber
+          description: Chromosome to be queried
+          required: true
+          schema:
+            $ref: '#/components/schemas/chromosomeNumber'
+        - in: query
+          name: startPosition
+          description: Starting position for query
+          required: true
+          schema:
+            $ref: '#/components/schemas/startPosition'
+        - in: query
+          name: endPosition
+          description: Ending Position for query
+          required: true
+          schema:
+            $ref: '#/components/schemas/endPosition'
+      responses:
+        '200':
+          description: Segments within the specified region
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Segment'
+        '400':
+          description: bad input parameter
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                code: 400
+                message: Invalid Parameter. Check Request
+        '403':
+          description: Authorization error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                code: 403
+                message: Authorization error
+        '404':
+          description: PatientID not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                code: 404
+                message: PatientID not found
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                code: 500
+                message: Internal Server Error
+
+
+components:
+  schemas:
+    Segment:
+      type: object
+      required:
+        - patientID
+        - sampleID
+        - chromosomeNumber
+        - startPosition
+        - endPosition
+        - copyNumber
+        - copyNumberPloidyCorrected
+      properties:
+        patientID:
+          $ref: '#/components/schemas/patientID'
+        sampleID:
+          $ref: '#/components/schemas/sampleID'
+        chromosomeNumber:
+          $ref: '#/components/schemas/chromosomeNumber'
+        startPosition:
+          $ref: '#/components/schemas/startPosition'
+        endPosition:
+          $ref: '#/components/schemas/endPosition'
+        copyNumber:
+          $ref: '#/components/schemas/copyNumber'
+        copyNumberPloidyCorrected:
+          $ref: '#/components/schemas/copyNumberPloidyCorrected'
+    
+    Error:
+      type: object
+      required:
+        - message
+        - code
+      properties:
+        code:
+          type: integer
+          format: int32
+        message:
+          type: string    
+    
+    patientID:
+      type: string
+      format: uuid
+      example: d290f1ee-6c54-4b01-90e6-d701748f0851
+    
+    sampleID:
+      type: string
+      example: COV2202
+    
+    startPosition:
+      type: integer
+      format: int32
+      example: 12523
+      minimum: 0
+
+    endPosition:
+      type: integer
+      format: int32
+      example: 23425
+      minimum: 0
+    
+    copyNumber:
+      type: number
+      format: float
+      example: -0.16
+    
+    copyNumberPloidyCorrected:
+      type: integer
+      format: int32
+      minimum: 0
+    
+    chromosomeNumber:
+      type: string
+      example: 5
