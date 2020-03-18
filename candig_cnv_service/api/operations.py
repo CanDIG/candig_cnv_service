@@ -1,7 +1,5 @@
 import flask
 
-from candig_cnv_service.orm import get_session
-
 APP = flask.current_app
 
 

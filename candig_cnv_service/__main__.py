@@ -4,7 +4,6 @@ import argparse
 import logging
 
 import connexion
-import pkg_resources
 
 from tornado.options import define
 import candig_cnv_service.orm

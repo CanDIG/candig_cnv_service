@@ -13,6 +13,7 @@ Base = declarative_base()
 _ENGINE = None
 _DB_SESSION = None
 
+
 # From http://docs.sqlalchemy.org/en/latest/faq/connections.html
 def add_engine_pidguard(engine):
     """Add multiprocessing guards.

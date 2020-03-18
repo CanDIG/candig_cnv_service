@@ -9,7 +9,8 @@ class GUID(TypeDecorator):
     impl = CHAR
 
     def load_dialect_impl(self, dialect):
-        """Dialect-specific implementation; use UUIDs for Postgres, otherwise CHAR"""
+        """Dialect-specific implementation;
+           use UUIDs for Postgres, otherwise CHAR"""
         if dialect.name == "postgresql":
             return dialect.type_descriptor(UUID())
         else:
