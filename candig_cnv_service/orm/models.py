@@ -17,7 +17,7 @@ class Sample(Base):
 
     sample_id = Column(String(100), primary_key=True)
     patient_id = Column(GUID(), ForeignKey("patient.patiend_id"))
-    cnv_id = relationship("cnv") 
+    cnv_id = relationship("cnv")
 
 
 class CNV(Base):
