@@ -8,11 +8,6 @@ pyyaml>=4.2b1
 swagger-ui-bundle==0.0.5
 pronto==1.1.3
 
-pytest-cov==2.7.1
-coverage==4.5.3
-pytest==4.5.0
-pytest-runner==4.4
-
 uwsgi==2.0.18
 
 
