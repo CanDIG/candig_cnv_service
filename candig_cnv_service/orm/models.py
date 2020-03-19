@@ -2,22 +2,22 @@ from sqlalchemy import Column, String, Integer, ForeignKey, Float
 from sqlalchemy.orm import relationship
 
 from candig_cnv_service.orm import Base
-from candig_cnv_service.org.guid import GUID
+from candig_cnv_service.orm.guid import GUID
 
 
 class Patient(Base):
-    __tablename__ = "Patient"
+    __tablename__ = "patient"
 
     patient_id = Column(GUID(), primary_key=True)
-    sample_id = relationship("sample")
+    sample_id = relationship("Sample")
 
 
 class Sample(Base):
-    __tablename__ = "Sample"
+    __tablename__ = "sample"
 
     sample_id = Column(String(100), primary_key=True)
-    patient_id = Column(GUID(), ForeignKey("patient.patiend_id"))
-    cnv_id = relationship("cnv")
+    patient_id = Column(GUID(), ForeignKey("patient.patient_id"))
+    cnv_id = relationship("CNV")
 
 
 class CNV(Base):
