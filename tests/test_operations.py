@@ -2,7 +2,7 @@ import pytest
 import os
 import sys
 
-sys.path.append({"{}/{}".format(os.getcwd(), "candig_cnv_service")})
+sys.path.append("{}/{}".format(os.getcwd(), "candig_cnv_service"))
 sys.path.append(os.getcwd())
 
 from candig_cnv_service import orm
