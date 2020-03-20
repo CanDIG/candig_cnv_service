@@ -8,6 +8,7 @@ from sqlalchemy import exc
 
 from candig_cnv_service.orm import get_session, ORMException
 from candig_cnv_service.orm.models import Patient, Sample
+from candig_cnv_service import orm
 from candig_cnv_service.api.logging import apilog, logger
 from candig_cnv_service.api.logging import structured_log as struct_log
 
@@ -98,7 +99,16 @@ def _report_write_error(typename, exception, **kwargs):
 
 
 def get_patients():
-    return [], 200
+    """
+    Return all individuals
+    """
+    try:
+        q = Patient().query.all()
+    except orm.ORMException as e:
+        err = _report_search_failed("patient", e, patient_id="all")
+        return err, 500
+
+    return [orm.dump(p) for p in q], 200
 
 
 def get_samples():

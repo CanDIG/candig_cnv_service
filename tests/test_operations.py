@@ -51,4 +51,5 @@ def test_get_segment(test_client):
     with context:
         result, code = operations.get_segments()
         assert isinstance(result, list)
-        assert code == 200   
+        assert code == 200
+       
