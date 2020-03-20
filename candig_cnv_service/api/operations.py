@@ -44,7 +44,7 @@ def _report_object_exists(typename, **kwargs):
     """
     report = typename + ' already exists'
     logger().warning(struct_log(action=report, **kwargs))
-    return dict(message=report, code=405)
+    return dict(message=report, code=400)
 
 
 def _report_foreign_key(typename, **kwargs):
@@ -57,7 +57,7 @@ def _report_foreign_key(typename, **kwargs):
     """
     report = typename + ' requires an existing foreign key'
     logger().warning(struct_log(action=report, **kwargs))
-    return dict(message=report, code=405)
+    return dict(message=report, code=400)
 
 
 def _report_update_failed(typename, exception, **kwargs):
@@ -168,7 +168,7 @@ def add_patients(body):
     except exc.IntegrityError:
         db_session.rollback()
         err = _report_object_exists('patient: ' + body['patient_id'], **body)
-        return err, 405
+        return err, 400
     except ORMException as e:
         db_session.rollback()
         err = _report_write_error('patient', e, **body)
@@ -220,16 +220,14 @@ def add_samples(body):
         db_session.add(orm_sample)
         db_session.commit()
     except exc.IntegrityError as ie:
-        # TODO: Error for foreign key constraints
-
         if (ie.args[0].find("FOREIGN KEY constraint failed")):
             db_session.rollback()
             err = _report_foreign_key('sample: ' + body['sample_id'], **body)
-            return err, 405
+            return err, 400
 
         db_session.rollback()
         err = _report_object_exists('sample: ' + body['sample_id'], **body)
-        return err, 405
+        return err, 400
     except ORMException as e:
         db_session.rollback()
         err = _report_write_error('sample', e, **body)
