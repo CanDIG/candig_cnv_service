@@ -24,7 +24,7 @@ def _report_search_failed(typename, exception, **kwargs):
     return dict(message=message, code=500)
     
 
-def getPatients():
+def get_patients():
     """
     Return all individuals
     """
@@ -37,9 +37,9 @@ def getPatients():
     return [orm.dump(p) for p in q], 200
 
 
-def getSamples():
+def get_samples():
     return [], 200
 
 
-def getSegment():
+def get_segments():
     return [], 200
