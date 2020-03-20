@@ -44,7 +44,20 @@ def _report_object_exists(typename, **kwargs):
     """
     report = typename + ' already exists'
     logger().warning(struct_log(action=report, **kwargs))
-    return dict(message=report, code=405)
+    return dict(message=report, code=400)
+
+
+def _report_foreign_key(typename, **kwargs):
+    """
+    Generate standard log message + request error for warning:
+    Trying to POST an object that lacks a foreign key
+    :param typename: name of type involved
+    :param **kwargs: arbitrary keyword parameters
+    :return: Connexion Error() type to return
+    """
+    report = typename + ' requires an existing foreign key'
+    logger().warning(struct_log(action=report, **kwargs))
+    return dict(message=report, code=400)
 
 
 def _report_update_failed(typename, exception, **kwargs):
@@ -155,7 +168,7 @@ def add_patients(body):
     except exc.IntegrityError:
         db_session.rollback()
         err = _report_object_exists('patient: ' + body['patient_id'], **body)
-        return err, 405
+        return err, 400
     except ORMException as e:
         db_session.rollback()
         err = _report_write_error('patient', e, **body)
@@ -182,6 +195,14 @@ def add_samples(body):
 
     db_session = get_session()
 
+    print(body)
+
+    if not body.get('patient_id'):
+        err = dict(
+            message="No patient_id provided",
+            code=400)
+        return err, 400
+
     if not body.get('sample_id'):
         err = dict(
             message="No sample_id provided",
@@ -189,7 +210,8 @@ def add_samples(body):
         return err, 400
 
     try:
-        orm_sample = Sample(sample_id=body['sample_id'])
+        orm_sample = Sample(sample_id=body['sample_id'],
+                            patient_id=body['patient_id'])
     except TypeError as e:
         err = _report_conversion_error('sample', e, **body)
         return err, 400
@@ -197,10 +219,15 @@ def add_samples(body):
     try:
         db_session.add(orm_sample)
         db_session.commit()
-    except exc.IntegrityError:
+    except exc.IntegrityError as ie:
+        if (ie.args[0].find("FOREIGN KEY constraint failed")):
+            db_session.rollback()
+            err = _report_foreign_key('sample: ' + body['sample_id'], **body)
+            return err, 400
+
         db_session.rollback()
         err = _report_object_exists('sample: ' + body['sample_id'], **body)
-        return err, 405
+        return err, 400
     except ORMException as e:
         db_session.rollback()
         err = _report_write_error('sample', e, **body)
@@ -210,7 +237,35 @@ def add_samples(body):
 
 
 def add_segments(body):
-    return [], 200
+    """
+    Creates a new CNV following the CNV schema attached to an
+    existing sample.
+
+    :param body: POST request body
+    :type body: object
+
+    :returns: message, 201 on success, error code on failure
+    :rtype: object, int
+
+    .. note::
+        Refer to the OpenAPI Spec for a proper schemas of CNV objects.
+    """
+
+    # db_session = get_session()
+
+    if not body.get('patient_id'):
+        err = dict(
+            message="No patient_id provided",
+            code=400)
+        return err, 400
+
+    if not body.get('sample_id'):
+        err = dict(
+            message="No sample_id provided",
+            code=400)
+        return err, 400
+
+    return {"code": 201, "message": ""}, 201
 
 
 def validate_uuid_string(field_name, uuid_str):
