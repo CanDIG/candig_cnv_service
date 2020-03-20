@@ -21,16 +21,16 @@ paths:
         - researchers
       summary: |
         Lists all patients in the system
-      operationId: candig_cnv_service.api.operations.getPatients
+      operationId: candig_cnv_service.api.operations.get_patients
       responses:
         '200':
-          description: List of known patientIDs 
+          description: List of known patient_ids 
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/patientID'
+                  $ref: '#/components/schemas/patient_id'
         '400':
           description: bad input parameter
           content:
@@ -55,10 +55,9 @@ paths:
         - admins
       summary: |
         Create a new patient
-      operationId: candig_cnv_service.api.operations.addPatients
+      operationId: candig_cnv_service.api.operations.add_patients
       description: |
-        Adds a new patient to the database along with any samples and any
-        associated CNVs
+        Adds a new patient to the database
       requestBody:
         content:
           application/json:
@@ -105,31 +104,29 @@ paths:
                 message: Internal Server Error
 
   
-  /cnvariant/patients/{patientID}/sample:
+  /cnvariant/patients/samples:
     get:
       tags:
         - researchers
       summary: |
-        Lists all sampleIDs tied to a patient
-      operationId: candig_cnv_service.api.operations.getSamples
+        Lists all sample_ids tied to a patient
+      operationId: candig_cnv_service.api.operations.get_samples
       description: |
         Returns a list of known samples for a specific patientID
       parameters:
-        - in: path
-          name: patientID
+        - in: query
+          name: patient_id
           description: Patient to be queried
           required: true
           schema:
-            $ref: '#/components/schemas/patientID'
+            $ref: '#/components/schemas/patient_id'
       responses:
         '200':
-          description: List of known SampleIDs
+          description: List of known sample_ids
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/sampleID'
+                $ref: '#/components/schemas/Patient'
         '400':
           description: bad input parameter
           content:
@@ -153,22 +150,19 @@ paths:
       tags:
         - admins
       summary: Create a new sample
-      operationId: candig_cnv_service.api.operations.addSamples
+      operationId: candig_cnv_service.api.operations.add_samples
       description: |
-        Adds a new sample to an existing patient, along with any associated
-        CNV data
-      parameters:
-        - in: path
-          name: patientID
-          description: Patient to be queried
-          required: true
-          schema:
-            $ref: '#/components/schemas/patientID'
+        Adds a new sample to an existing patient
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Sample'
+              type: object
+              properties:
+                patient_id:
+                  $ref: '#/components/schemas/patient_id'
+                sample_id:
+                  $ref: '#/components/schemas/sample_id'
       responses:
         '201':
           description: New sample created
@@ -210,47 +204,47 @@ paths:
                 message: Internal Server Error
       
                 
-  /cnvariant/patients/{patientID}/samples/{sampleID}:
+  /cnvariant/patients/samples/cnv:
     get:
       tags:
         - researchers
       summary: |
         Searches for all segments within the specified region
-      operationId: candig_cnv_service.api.operations.getSegment
+      operationId: candig_cnv_service.api.operations.get_segments
       description: |
         Passing in a patient ID, sample ID, chromosome number, start and end position will return
         all known segments within the region.
       parameters:
-        - in: path
-          name: patientID
+        - in: query
+          name: patient_id
           description: Patient to be queried
           required: true
           schema:
-            $ref: '#/components/schemas/patientID'
-        - in: path
-          name: sampleID
+            $ref: '#/components/schemas/patient_id'
+        - in: query
+          name: sample_id
           description: Sample to be queried
           required: true
           schema:
-            $ref: '#/components/schemas/sampleID'
+            $ref: '#/components/schemas/sample_id'
         - in: query
-          name: chromosomeNumber
+          name: chromosome_number
           description: Chromosome to be queried
           required: true
           schema:
-            $ref: '#/components/schemas/chromosomeNumber'
+            $ref: '#/components/schemas/chromosome_number'
         - in: query
-          name: startPosition
+          name: start_position
           description: Starting position for query
           required: true
           schema:
-            $ref: '#/components/schemas/startPosition'
+            $ref: '#/components/schemas/start_position'
         - in: query
-          name: endPosition
+          name: end_position
           description: Ending Position for query
           required: true
           schema:
-            $ref: '#/components/schemas/endPosition'
+            $ref: '#/components/schemas/end_position'
       responses:
         '200':
           description: Segments within the specified region
@@ -301,29 +295,15 @@ paths:
       tags:
         - admins
       summary: Create a new CNV
-      operationId: candig_cnv_service.api.operations.addCNV
+      operationId: candig_cnv_service.api.operations.add_segments
       description: |
         Adds a new CNV set to an existing sample
-      parameters:
-        - in: path
-          name: patientID
-          description: Patient to be queried
-          required: true
-          schema:
-            $ref: '#/components/schemas/patientID'
-        - in: path
-          name: sampleID
-          description: Sample to be queried
-          required: true
-          schema:
-            $ref: '#/components/schemas/sampleID'
+
       requestBody:
         content:
           application/json:
             schema:
-              type: array
-              items:
-                $ref: '#/components/schemas/Segment'
+              $ref: '#/components/schemas/CNV'
       responses:
         '201':
           description: New CNV set created
@@ -372,25 +352,22 @@ components:
     Segment:
       type: object
       required:
-        - sampleID
-        - chromosomeNumber
-        - startPosition
-        - endPosition
-        - copyNumber
-        - copyNumberPloidyCorrected
+        - chromosome_number
+        - start_position
+        - end_position
+        - copy_number
+        - copy_number_ploidy_corrected
       properties:
-        sampleID:
-          $ref: '#/components/schemas/sampleID'
-        chromosomeNumber:
-          $ref: '#/components/schemas/chromosomeNumber'
-        startPosition:
-          $ref: '#/components/schemas/startPosition'
-        endPosition:
-          $ref: '#/components/schemas/endPosition'
-        copyNumber:
-          $ref: '#/components/schemas/copyNumber'
-        copyNumberPloidyCorrected:
-          $ref: '#/components/schemas/copyNumberPloidyCorrected'
+        chromosome_number:
+          $ref: '#/components/schemas/chromosome_number'
+        start_position:
+          $ref: '#/components/schemas/start_position'
+        end_position:
+          $ref: '#/components/schemas/end_position'
+        copy_number:
+          $ref: '#/components/schemas/copy_number'
+        copy_number_ploidy_corrected:
+          $ref: '#/components/schemas/copy_number_ploidy_corrected'
     
     Error:
       type: object
@@ -420,58 +397,62 @@ components:
     Patient:
       type: object
       required: 
-        - patientID
+        - patient_id
       properties:
-        patientID:
-          $ref: '#/components/schemas/patientID'
+        patient_id:
+          $ref: '#/components/schemas/patient_id'
         samples:
           type: array
           items:
-            $ref: '#/components/schemas/Sample'
+            $ref: '#/components/schemas/sample_id'
     
-    Sample:
+    CNV:
       type: object
       required:
-        - sampleID
+        - patient_id
+        - sample_id
+        - segments
       properties:
-        sampleID:
-          $ref: '#/components/schemas/sampleID'
-        CNV:
+        patient_id:
+          $ref: '#/components/schemas/patient_id'
+        sample_id:
+          $ref: '#/components/schemas/sample_id'
+        segments:
           type: array
           items:
             $ref: '#/components/schemas/Segment'
           
-    patientID:
+    patient_id:
       type: string
       format: uuid
       example: d290f1ee-6c54-4b01-90e6-d701748f0851
     
-    sampleID:
+    sample_id:
       type: string
       example: COV2202
     
-    startPosition:
+    start_position:
       type: integer
       format: int32
       example: 12523
       minimum: 0
 
-    endPosition:
+    end_position:
       type: integer
       format: int32
       example: 23425
       minimum: 0
     
-    copyNumber:
+    copy_number:
       type: number
       format: float
       example: -0.16
     
-    copyNumberPloidyCorrected:
+    copy_number_ploidy_corrected:
       type: integer
       format: int32
       minimum: 0
     
-    chromosomeNumber:
+    chromosome_number:
       type: string
       example: 5

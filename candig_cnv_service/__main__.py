@@ -1,4 +1,5 @@
 import sys
+import os
 import json
 import argparse
 import logging
@@ -26,7 +27,12 @@ def main(args=None):
     parser.add_argument("--name", default="candig_service")
 
     args, _ = parser.parse_known_args()
-    log_handler = logging.FileHandler(args.logfile)
+    try:
+        log_handler = logging.FileHandler(args.logfile)
+    except FileNotFoundError:
+        os.mkdir(os.getcwd()+"/log")
+        log_handler = logging.FileHandler(args.logfile)
+
     numeric_loglevel = getattr(logging, args.loglevel.upper())
     log_handler.setLevel(numeric_loglevel)
 
