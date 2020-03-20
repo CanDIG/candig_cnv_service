@@ -5,6 +5,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import scoped_session, sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 from tornado.options import options
+from sqlite3 import Connection as SQLite3Connection
 
 ORMException = SQLAlchemyError
 
@@ -48,6 +49,17 @@ def add_engine_pidguard(engine):
                 "attempting to check out in pid %s"
                 % (connection_record.info["pid"], pid)
             )
+
+    # From https://stackoverflow.com/questions/2614984/
+    # sqlite-sqlalchemy-how-to-enforce-foreign-keys
+    @event.listens_for(engine, "connect")
+    def _set_sqlite_pragma(
+        _dbapi_connection, connection_record
+    ):  # pylint:disable=unused-variable
+        if isinstance(_dbapi_connection, SQLite3Connection):
+            cursor = _dbapi_connection.cursor()
+            cursor.execute("PRAGMA foreign_keys=ON;")
+            cursor.close()
 
 
 def init_db(uri=None):
