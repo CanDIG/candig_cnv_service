@@ -3,6 +3,7 @@ Methods to handle incoming CNV service requests
 """
 
 import flask
+import uuid
 
 from sqlalchemy import exc
 
@@ -11,6 +12,7 @@ from candig_cnv_service.orm.models import Patient, Sample
 from candig_cnv_service import orm
 from candig_cnv_service.api.logging import apilog, logger
 from candig_cnv_service.api.logging import structured_log as struct_log
+from candig_cnv_service.api.exceptions import IdentifierFormatError
 
 APP = flask.current_app
 
@@ -102,11 +104,15 @@ def get_patients():
     """
     Return all individuals
     """
+
+    db_session = get_session()
+
     try:
-        q = Patient().query.all()
+        q = db_session.query(Patient)
     except orm.ORMException as e:
         err = _report_search_failed("patient", e, patient_id="all")
         return err, 500
+    print(q)
 
     return [orm.dump(p) for p in q], 200
 
@@ -205,3 +211,16 @@ def add_samples(body):
 
 def add_segments(body):
     return [], 200
+
+
+def validate_uuid_string(field_name, uuid_str):
+    """
+    Validate that the id parameter is a valid UUID string
+
+    :param uuid_str: query parameter
+    :param field_name: id field name
+    """
+    try:
+        uuid.UUID(uuid_str)
+    except ValueError:
+        raise IdentifierFormatError(field_name)

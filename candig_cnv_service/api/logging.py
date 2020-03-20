@@ -60,4 +60,3 @@ def apilog(func, *args, **kwargs):
 
     current_app.logger.info(logentry)
     return func(*args, **kwargs)
-
