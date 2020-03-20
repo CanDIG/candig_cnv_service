@@ -182,6 +182,14 @@ def add_samples(body):
 
     db_session = get_session()
 
+    print(body)
+
+    if not body.get('patient_id'):
+        err = dict(
+            message="No patient_id provided",
+            code=400)
+        return err, 400
+
     if not body.get('sample_id'):
         err = dict(
             message="No sample_id provided",
@@ -189,7 +197,8 @@ def add_samples(body):
         return err, 400
 
     try:
-        orm_sample = Sample(sample_id=body['sample_id'])
+        orm_sample = Sample(sample_id=body['sample_id'],
+                            patient_id=body['patient_id'])
     except TypeError as e:
         err = _report_conversion_error('sample', e, **body)
         return err, 400
@@ -198,6 +207,7 @@ def add_samples(body):
         db_session.add(orm_sample)
         db_session.commit()
     except exc.IntegrityError:
+        # TODO: Error for foreign key constraints
         db_session.rollback()
         err = _report_object_exists('sample: ' + body['sample_id'], **body)
         return err, 405
@@ -210,7 +220,35 @@ def add_samples(body):
 
 
 def add_segments(body):
-    return [], 200
+    """
+    Creates a new CNV following the CNV schema attached to an
+    existing sample.
+
+    :param body: POST request body
+    :type body: object
+
+    :returns: message, 201 on success, error code on failure
+    :rtype: object, int
+
+    .. note::
+        Refer to the OpenAPI Spec for a proper schemas of CNV objects.
+    """
+
+    # db_session = get_session()
+
+    if not body.get('patient_id'):
+        err = dict(
+            message="No patient_id provided",
+            code=400)
+        return err, 400
+
+    if not body.get('sample_id'):
+        err = dict(
+            message="No sample_id provided",
+            code=400)
+        return err, 400
+
+    return {"code": 201, "message": ""}, 201
 
 
 def validate_uuid_string(field_name, uuid_str):
