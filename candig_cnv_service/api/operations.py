@@ -47,6 +47,19 @@ def _report_object_exists(typename, **kwargs):
     return dict(message=report, code=405)
 
 
+def _report_foreign_key(typename, **kwargs):
+    """
+    Generate standard log message + request error for warning:
+    Trying to POST an object that lacks a foreign key
+    :param typename: name of type involved
+    :param **kwargs: arbitrary keyword parameters
+    :return: Connexion Error() type to return
+    """
+    report = typename + ' requires an existing foreign key'
+    logger().warning(struct_log(action=report, **kwargs))
+    return dict(message=report, code=405)
+
+
 def _report_update_failed(typename, exception, **kwargs):
     """
     Generate standard log message + request error for error:
@@ -206,8 +219,14 @@ def add_samples(body):
     try:
         db_session.add(orm_sample)
         db_session.commit()
-    except exc.IntegrityError:
+    except exc.IntegrityError as ie:
         # TODO: Error for foreign key constraints
+
+        if (ie.args[0].find("FOREIGN KEY constraint failed")):
+            db_session.rollback()
+            err = _report_foreign_key('sample: ' + body['sample_id'], **body)
+            return err, 405
+
         db_session.rollback()
         err = _report_object_exists('sample: ' + body['sample_id'], **body)
         return err, 405

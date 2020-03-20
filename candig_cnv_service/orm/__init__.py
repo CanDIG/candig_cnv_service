@@ -50,6 +50,8 @@ def add_engine_pidguard(engine):
                 % (connection_record.info["pid"], pid)
             )
 
+    # From https://stackoverflow.com/questions/2614984/
+    # sqlite-sqlalchemy-how-to-enforce-foreign-keys
     @event.listens_for(engine, "connect")
     def _set_sqlite_pragma(
         _dbapi_connection, connection_record
