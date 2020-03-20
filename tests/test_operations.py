@@ -65,8 +65,8 @@ def test_add_same_patient(test_client):
         assert code == 201
         assert response["code"] == 201
         response, code = operations.add_patients(patient_1)
-        assert code == 405
-        assert response["code"] == 405
+        assert code == 400
+        assert response["code"] == 400
 
 
 def test_get_patient(test_client):
@@ -115,8 +115,8 @@ def test_add_sample_twice(test_client):
         assert response["code"] == 201
         
         response, code = operations.add_samples(sample_1)
-        assert code == 405
-        assert response["code"] == 405
+        assert code == 400
+        assert response["code"] == 400
 
 def test_add_sample_no_patient(test_client):
     """
