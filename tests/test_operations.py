@@ -33,7 +33,7 @@ def test_get_patient(test_client):
     context = test_client
 
     with context:
-        result, code =  operations.getPatients()
+        result, code =  operations.get_patients()
         assert isinstance(result, list)
         assert code == 200
 
@@ -41,7 +41,7 @@ def test_get_samples(test_client):
     context = test_client
 
     with context:
-        result, code = operations.getSamples()
+        result, code = operations.get_samples()
         assert isinstance(result, list)
         assert code == 200
 
@@ -49,6 +49,6 @@ def test_get_segment(test_client):
     context = test_client
 
     with context:
-        result, code = operations.getSegment()
+        result, code = operations.get_segments()
         assert isinstance(result, list)
         assert code == 200   
