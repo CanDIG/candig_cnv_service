@@ -1,3 +1,5 @@
+import string
+import random
 import uuid
 import pytest
 import os
@@ -146,6 +148,38 @@ def test_get_samples(test_client):
     context = test_client
 
     sample_1, sample_2, _, patient_1 = load_test_samples()
+    sample_3, sample_4, _, patient_2 = load_test_samples()
+
+    with context:
+        _, code = operations.add_patients(patient_1)
+        assert code == 201
+        _, code = operations.add_patients(patient_2)
+        assert code == 201
+
+        _, code = operations.add_samples(sample_1)
+        assert code == 201
+        _, code = operations.add_samples(sample_2)
+        assert code == 201
+
+        _, code = operations.add_samples(sample_3)
+        assert code == 201
+        _, code = operations.add_samples(sample_4)
+        assert code == 201
+
+        response, code = operations.get_samples(patient_1["patient_id"])
+        assert code == 200
+        assert len(response["samples"]) == 2
+        assert sample_1["sample_id"] in response["samples"]
+        assert sample_2["sample_id"] in response["samples"]
+
+
+def test_get_samples_invalid_patient_id(test_client):
+    """
+    Test 'get_samples' when patient_id values are invalid
+    """
+    context = test_client
+    sample_1, sample_2, _, patient_1 = load_test_samples()
+    _, _, _, patient_2 = load_test_samples()
 
     with context:
         _, code = operations.add_patients(patient_1)
@@ -153,15 +187,15 @@ def test_get_samples(test_client):
 
         _, code = operations.add_samples(sample_1)
         assert code == 201
-
         _, code = operations.add_samples(sample_2)
         assert code == 201
 
-        response, code = operations.get_samples()
+        _, code = operations.add_patients(patient_2)
+        assert code == 201
+
+        response, code = operations.get_samples(patient_2["patient_id"])
         assert code == 200
-        assert len(response["samples"]) == 2
-        assert sample_1["sample_id"] in response["samples"]
-        assert sample_2["sample_id"] in response["samples"]
+        assert not response
 
 
 def test_add_segments(test_client):
@@ -323,14 +357,15 @@ def load_test_samples():
     """
     Return some mock sample data
     """
+    samp = lambda x: "".join(random.choice(string.ascii_lowercase) for i in range(x))
 
     patient_1, _, _ = load_test_patients()
 
-    sample_1 = {"sample_id": "1", "patient_id": patient_1["patient_id"]}
+    sample_1 = {"sample_id": samp(5), "patient_id": patient_1["patient_id"]}
 
-    sample_2 = {"sample_id": "2", "patient_id": patient_1["patient_id"]}
+    sample_2 = {"sample_id": samp(5), "patient_id": patient_1["patient_id"]}
 
-    sample_3 = {"sample_id": "3"}
+    sample_3 = {"sample_id": samp(5)}
 
     return sample_1, sample_2, sample_3, patient_1
 

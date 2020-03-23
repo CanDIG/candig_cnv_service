@@ -129,9 +129,41 @@ def get_patients():
     patient_ids_dict = [orm.dump(p) for p in q]
     return [d["patient_id"] for d in patient_ids_dict], 200
 
+@apilog
+def get_samples(patient_id):
+    """
+    Return samples of a patient.
 
-def get_samples():
-    return [], 200
+    :param patient_id: Id of patient
+    :type patient_id = string
+
+    :returns: samples, 200 on sucess, error code on failure
+    :rtype: object, int
+    """
+
+    db_session = get_session()
+
+    if not patient_id:
+        err = dict(
+            message="No patient_id provided",
+            code=400)
+        return err, 400
+
+    try:
+        q = db_session.query(Sample).filter_by(patient_id = patient_id)
+    except orm.ORMException as e:
+        err = _report_search_failed("sample", e, patient_id=patient_id)
+        return err, 500
+    
+    response = {}
+    dump = [orm.dump(p) for p in q]    
+    for d in dump:
+        response["patient_id"] = d["patient_id"]
+        samples = response.get("samples", [])
+        samples.append(d['sample_id'])
+        response['samples'] = samples
+
+    return response, 200
 
 
 def get_segments():
