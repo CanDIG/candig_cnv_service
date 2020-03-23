@@ -125,8 +125,7 @@ def get_patients():
     except orm.ORMException as e:
         err = _report_search_failed("patient", e, patient_id="all")
         return err, 500
-    print(q)
- 
+
     patient_ids_dict = [orm.dump(p) for p in q]
     return [d["patient_id"] for d in patient_ids_dict], 200
 
@@ -252,7 +251,6 @@ def add_segments(body):
         Refer to the OpenAPI Spec for a proper schemas of CNV objects.
     """
 
-
     db_session = get_session()
 
     if not body.get('patient_id'):
@@ -268,7 +266,6 @@ def add_segments(body):
         return err, 400
 
     segments = body["segments"]
-    # TODO Deal with duplicates/better PK implementation
     for segment in segments:
         segment["sample_id"] = body["sample_id"]
 
