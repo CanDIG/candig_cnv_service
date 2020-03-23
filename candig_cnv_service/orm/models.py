@@ -58,9 +58,11 @@ class CNV(Base):
     Variants, all tied to a Sample
     """
     __tablename__ = "cnv"
-    cnv_id = Column(Integer, primary_key=True)
-    sample_id = Column(String(100), ForeignKey("sample.sample_id"))
-    start_position = Column(Integer)
+    # cnv_id = Column(Integer, primary_key=True)
+    sample_id = Column(String(100), 
+                       ForeignKey("sample.sample_id"),
+                       primary_key=True)
+    start_position = Column(Integer, primary_key=True)
     end_position = Column(Integer)
     copy_number = Column(Float)
     copy_number_ploidy_corrected = Column(Integer)
