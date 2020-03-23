@@ -126,8 +126,9 @@ def get_patients():
         err = _report_search_failed("patient", e, patient_id="all")
         return err, 500
     print(q)
-
-    return [orm.dump(p) for p in q], 200
+ 
+    patient_ids_dict = [orm.dump(p) for p in q]
+    return [d["patient_id"] for d in patient_ids_dict], 200
 
 
 def get_samples():
@@ -250,6 +251,7 @@ def add_segments(body):
     .. note::
         Refer to the OpenAPI Spec for a proper schemas of CNV objects.
     """
+
 
     db_session = get_session()
 
