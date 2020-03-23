@@ -8,7 +8,7 @@ import uuid
 from sqlalchemy import exc
 
 from candig_cnv_service.orm import get_session, ORMException
-from candig_cnv_service.orm.models import Patient, Sample
+from candig_cnv_service.orm.models import Patient, Sample, CNV
 from candig_cnv_service import orm
 from candig_cnv_service.api.logging import apilog, logger
 from candig_cnv_service.api.logging import structured_log as struct_log
@@ -125,8 +125,7 @@ def get_patients():
     except orm.ORMException as e:
         err = _report_search_failed("patient", e, patient_id="all")
         return err, 500
-    print(q)
- 
+
     patient_ids_dict = [orm.dump(p) for p in q]
     return [d["patient_id"] for d in patient_ids_dict], 200
 
@@ -252,7 +251,7 @@ def add_segments(body):
         Refer to the OpenAPI Spec for a proper schemas of CNV objects.
     """
 
-    # db_session = get_session()
+    db_session = get_session()
 
     if not body.get('patient_id'):
         err = dict(
@@ -266,7 +265,37 @@ def add_segments(body):
             code=400)
         return err, 400
 
-    return {"code": 201, "message": ""}, 201
+    segments = body["segments"]
+    for segment in segments:
+        segment["sample_id"] = body["sample_id"]
+
+        print(segment)
+        try:
+            orm_segment = CNV(**segment)
+        except TypeError as e:
+            err = _report_conversion_error('segment', e, **body)
+            return err, 400
+
+        try:
+            db_session.add(orm_segment)
+            db_session.commit()
+        except exc.IntegrityError as ie:
+            if (ie.args[0].find("FOREIGN KEY constraint failed")):
+                db_session.rollback()
+                err = _report_foreign_key('segment: ' + body['sample_id'],
+                                          **body)
+                return err, 400
+
+            db_session.rollback()
+            err = _report_object_exists('segment: ' + body['sample_id'],
+                                        **body)
+            return err, 400
+        except ORMException as e:
+            db_session.rollback()
+            err = _report_write_error('segment', e, **body)
+            return err, 500
+
+    return {"code": 201, "message": "Segments successfully added"}, 201
 
 
 def validate_uuid_string(field_name, uuid_str):

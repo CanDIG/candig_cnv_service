@@ -125,7 +125,7 @@ def test_add_sample_twice(test_client):
 
 def test_add_sample_no_patient(test_client):
     """
-    Test adding sample where no patient information 
+    Test adding sample where no patient information
     is present on patient table 
     """
 
