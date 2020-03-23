@@ -63,5 +63,5 @@ class CNV(Base):
     start_position = Column(Integer)
     end_position = Column(Integer)
     copy_number = Column(Float)
-    copy_number_ploidy_correcte = Column(Integer)
+    copy_number_ploidy_corrected = Column(Integer)
     chromosome_number = Column(String(100))

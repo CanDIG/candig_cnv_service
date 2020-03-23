@@ -310,12 +310,10 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
                   $ref: '#/components/schemas/Success'
-                example:
-                  code: 201
-                  message: CNV successfully added
+              example:
+                code: 201
+                message: CNV successfully added
                   
         '400':
           description: Input provided in body does not pass schema validation
