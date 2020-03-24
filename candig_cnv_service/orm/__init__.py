@@ -111,5 +111,5 @@ def dump(obj, nonulls=True):
     return {
         k: v
         for k, v in vars(obj).items()
-        if not k.startswith("_") and k not in rels and v
+        if not k.startswith("_") and k not in rels and (v or v == 0)
     }
