@@ -26,11 +26,11 @@ def _report_search_failed(typename, exception, **kwargs):
     :param **kwargs: arbitrary keyword parameters
     :return: Connexion Error() type to return
     """
-    report = typename + ' search failed'
-    message = 'Internal error searching for '+typename+'s'
-    logger().error(struct_log(action=report,
-                              exception=str(exception),
-                              **kwargs))
+    report = typename + " search failed"
+    message = "Internal error searching for " + typename + "s"
+    logger().error(
+        struct_log(action=report, exception=str(exception), **kwargs)
+    )
     return dict(message=message, code=500)
 
 
@@ -42,7 +42,7 @@ def _report_object_exists(typename, **kwargs):
     :param **kwargs: arbitrary keyword parameters
     :return: Connexion Error() type to return
     """
-    report = typename + ' already exists'
+    report = typename + " already exists"
     logger().warning(struct_log(action=report, **kwargs))
     return dict(message=report, code=400)
 
@@ -55,7 +55,7 @@ def _report_foreign_key(typename, **kwargs):
     :param **kwargs: arbitrary keyword parameters
     :return: Connexion Error() type to return
     """
-    report = typename + ' requires an existing foreign key'
+    report = typename + " requires an existing foreign key"
     logger().warning(struct_log(action=report, **kwargs))
     return dict(message=report, code=400)
 
@@ -69,11 +69,11 @@ def _report_update_failed(typename, exception, **kwargs):
     :param **kwargs: arbitrary keyword parameters
     :return: Connexion Error() type to return
     """
-    report = typename + ' updated failed'
-    message = 'Internal error updating '+typename+'s'
-    logger().error(struct_log(action=report,
-                              exception=str(exception),
-                              **kwargs))
+    report = typename + " updated failed"
+    message = "Internal error updating " + typename + "s"
+    logger().error(
+        struct_log(action=report, exception=str(exception), **kwargs)
+    )
     return dict(message=message, code=500)
 
 
@@ -86,12 +86,13 @@ def _report_conversion_error(typename, exception, **kwargs):
     :param **kwargs: arbitrary keyword parameters
     :return: Connexion Error() type to return
     """
-    report = 'Could not convert '+typename+' to ORM model'
-    message = typename + (': failed validation - could not '
-                          'convert to internal representation')
-    logger().error(struct_log(action=report,
-                              exception=str(exception),
-                              **kwargs))
+    report = "Could not convert " + typename + " to ORM model"
+    message = typename + (
+        ": failed validation - could not " "convert to internal representation"
+    )
+    logger().error(
+        struct_log(action=report, exception=str(exception), **kwargs)
+    )
     return dict(message=message, code=400)
 
 
@@ -104,11 +105,11 @@ def _report_write_error(typename, exception, **kwargs):
     :param **kwargs: arbitrary keyword parameters
     :return: Connexion Error() type to return
     """
-    report = 'Internal error writing '+typename+' to DB'
-    message = typename + ': internal error saving ORM object to DB'
-    logger().error(struct_log(action=report,
-                              exception=str(exception),
-                              **kwargs))
+    report = "Internal error writing " + typename + " to DB"
+    message = typename + ": internal error saving ORM object to DB"
+    logger().error(
+        struct_log(action=report, exception=str(exception), **kwargs)
+    )
     err = dict(message=message, code=500)
     return err
 
@@ -129,6 +130,7 @@ def get_patients():
     patient_ids_dict = [orm.dump(p) for p in q]
     return [d["patient_id"] for d in patient_ids_dict], 200
 
+
 @apilog
 def get_samples(patient_id):
     """
@@ -144,30 +146,107 @@ def get_samples(patient_id):
     db_session = get_session()
 
     if not patient_id:
-        err = dict(
-            message="No patient_id provided",
-            code=400)
+        err = dict(message="No patient_id provided", code=400)
         return err, 400
 
     try:
-        q = db_session.query(Sample).filter_by(patient_id = patient_id)
+        q = db_session.query(Sample).filter_by(patient_id=patient_id)
     except orm.ORMException as e:
         err = _report_search_failed("sample", e, patient_id=patient_id)
         return err, 500
-    
+
     response = {}
-    dump = [orm.dump(p) for p in q]    
+    dump = [orm.dump(p) for p in q]
     for d in dump:
         response["patient_id"] = d["patient_id"]
         samples = response.get("samples", [])
-        samples.append(d['sample_id'])
-        response['samples'] = samples
+        samples.append(d["sample_id"])
+        response["samples"] = samples
 
     return response, 200
 
 
-def get_segments():
-    return [], 200
+@apilog
+def get_segments(
+    patient_id, sample_id, chromosome_number, start_position, end_position
+):
+    """
+    Return segments within the specified region
+
+    :param: patient_id: Id of patient
+    :type: string
+    :param: sample_id: Id of sample
+    :type: string
+    :param: chromosome_number: Chromosome number
+    :type: string
+    :param: start_position: Start position
+    :type: integer
+    :param: end_position: End position
+    :type: integer
+
+    :returns: segments, 200 on sucess, error code on failure
+    :rtype: object, int
+    """
+
+    db_session = get_session()
+    try:
+        validate_uuid_string("patient_id", str(patient_id))
+    except IdentifierFormatError as e:
+        err = _report_search_failed("cnv", e, patient_id=patient_id,)
+        return err, 500
+
+    if isinstance(sample_id, int):
+        sample_id = str(sample_id)
+    if isinstance(chromosome_number, int):
+        chromosome_number = str(chromosome_number)
+
+    try:
+        q = (
+            db_session.query(CNV)
+            .join(Sample)
+            .filter(
+                CNV.chromosome_number == chromosome_number,
+                Sample.sample_id == sample_id,
+                Sample.patient_id == patient_id,
+            )
+        )
+    except orm.ORMException as e:
+        err = _report_search_failed(
+            "cnv",
+            e,
+            patient_id=patient_id,
+            sample_id=sample_id,
+            chromosome_number=chromosome_number,
+        )
+        return err, 400
+
+    response = []
+    segments = [orm.dump(p) for p in q]
+    for segment in segments:
+        if (
+            (
+                segment["start_position"] >= start_position
+                and segment["end_position"] <= end_position
+            )
+            or (
+                segment["start_position"]
+                <= start_position
+                <= segment["end_position"]
+            )
+            or (
+                segment["start_position"]
+                <= end_position
+                <= segment["end_position"]
+            )
+            or (
+                start_position <= segment["start_position"]
+                and segment["end_position"] <= end_position
+            )
+        ):
+            del segment["sample_id"]
+            response.append(segment)
+    print(response)
+    return response, 200
 
 
 @apilog
@@ -189,9 +268,9 @@ def add_patients(body):
     db_session = get_session()
 
     try:
-        orm_patient = Patient(patient_id=body.get('patient_id'))
+        orm_patient = Patient(patient_id=body.get("patient_id"))
     except TypeError as e:
-        err = _report_conversion_error('patient', e, **body)
+        err = _report_conversion_error("patient", e, **body)
         return err, 400
 
     try:
@@ -199,11 +278,11 @@ def add_patients(body):
         db_session.commit()
     except exc.IntegrityError:
         db_session.rollback()
-        err = _report_object_exists('patient: ' + body['patient_id'], **body)
+        err = _report_object_exists("patient: " + body["patient_id"], **body)
         return err, 400
     except ORMException as e:
         db_session.rollback()
-        err = _report_write_error('patient', e, **body)
+        err = _report_write_error("patient", e, **body)
         return err, 500
 
     return {"code": 201, "message": "Patient successfully added"}, 201
@@ -229,45 +308,43 @@ def add_samples(body):
 
     print(body)
 
-    if not body.get('patient_id'):
-        err = dict(
-            message="No patient_id provided",
-            code=400)
+    if not body.get("patient_id"):
+        err = dict(message="No patient_id provided", code=400)
         return err, 400
 
-    if not body.get('sample_id'):
-        err = dict(
-            message="No sample_id provided",
-            code=400)
+    if not body.get("sample_id"):
+        err = dict(message="No sample_id provided", code=400)
         return err, 400
 
     try:
-        orm_sample = Sample(sample_id=body['sample_id'],
-                            patient_id=body['patient_id'])
+        orm_sample = Sample(
+            sample_id=body["sample_id"], patient_id=body["patient_id"]
+        )
     except TypeError as e:
-        err = _report_conversion_error('sample', e, **body)
+        err = _report_conversion_error("sample", e, **body)
         return err, 400
 
     try:
         db_session.add(orm_sample)
         db_session.commit()
     except exc.IntegrityError as ie:
-        if (ie.args[0].find("FOREIGN KEY constraint failed")):
+        if ie.args[0].find("FOREIGN KEY constraint failed"):
             db_session.rollback()
-            err = _report_foreign_key('sample: ' + body['sample_id'], **body)
+            err = _report_foreign_key("sample: " + body["sample_id"], **body)
             return err, 400
 
         db_session.rollback()
-        err = _report_object_exists('sample: ' + body['sample_id'], **body)
+        err = _report_object_exists("sample: " + body["sample_id"], **body)
         return err, 400
     except ORMException as e:
         db_session.rollback()
-        err = _report_write_error('sample', e, **body)
+        err = _report_write_error("sample", e, **body)
         return err, 500
 
     return {"code": 201, "message": "Sample successfully added"}, 201
 
 
+@apilog
 def add_segments(body):
     """
     Creates a new CNV following the CNV schema attached to an
@@ -285,46 +362,43 @@ def add_segments(body):
 
     db_session = get_session()
 
-    if not body.get('patient_id'):
-        err = dict(
-            message="No patient_id provided",
-            code=400)
+    if not body.get("patient_id"):
+        err = dict(message="No patient_id provided", code=400)
         return err, 400
 
-    if not body.get('sample_id'):
-        err = dict(
-            message="No sample_id provided",
-            code=400)
+    if not body.get("sample_id"):
+        err = dict(message="No sample_id provided", code=400)
         return err, 400
 
     segments = body["segments"]
     for segment in segments:
         segment["sample_id"] = body["sample_id"]
-
         print(segment)
         try:
             orm_segment = CNV(**segment)
         except TypeError as e:
-            err = _report_conversion_error('segment', e, **body)
+            err = _report_conversion_error("segment", e, **body)
             return err, 400
 
         try:
             db_session.add(orm_segment)
             db_session.commit()
         except exc.IntegrityError as ie:
-            if (ie.args[0].find("FOREIGN KEY constraint failed")):
+            if ie.args[0].find("FOREIGN KEY constraint failed"):
                 db_session.rollback()
-                err = _report_foreign_key('segment: ' + body['sample_id'],
-                                          **body)
+                err = _report_foreign_key(
+                    "segment: " + body["sample_id"], **body
+                )
                 return err, 400
 
             db_session.rollback()
-            err = _report_object_exists('segment: ' + body['sample_id'],
-                                        **body)
+            err = _report_object_exists(
+                "segment: " + body["sample_id"], **body
+            )
             return err, 400
         except ORMException as e:
             db_session.rollback()
-            err = _report_write_error('segment', e, **body)
+            err = _report_write_error("segment", e, **body)
             return err, 500
 
     return {"code": 201, "message": "Segments successfully added"}, 201
