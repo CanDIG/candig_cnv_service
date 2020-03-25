@@ -190,6 +190,17 @@ def get_segments(
 
     db_session = get_session()
     try:
+        validate_uuid_string("patient_id", str(patient_id))
+    except IdentifierFormatError as e:
+        err = _report_search_failed("cnv", e, patient_id=patient_id,)
+        return err, 500
+
+    if isinstance(sample_id, int):
+        sample_id = str(sample_id)
+    if isinstance(chromosome_number, int):
+        chromosome_number = str(chromosome_number)
+
+    try:
         q = (
             db_session.query(CNV)
             .join(Sample)
