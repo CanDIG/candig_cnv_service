@@ -312,7 +312,7 @@ def test_get_segment(test_client):
     chromosome_number = segment_1["segments"][0]["chromosome_number"]
     start_position = segment_1["segments"][0]["start_position"]
     end_position = segment_1["segments"][0]["end_position"]
-    copy_number = segment_1["segments"][0]["copy_number"] 
+    copy_number = segment_1["segments"][0]["copy_number"]
     copy_number_ploidy_corrected = segment_1["segments"][0][
         "copy_number_ploidy_corrected"
     ]
@@ -343,25 +343,21 @@ def test_get_segment(test_client):
         response, code = operations.add_segments(segment_3)
         assert code == 201
         assert response["code"] == 201
-        
+
         response, code = operations.add_segments(segment_4)
         assert code == 201
         assert response["code"] == 201
-       
+
         response, code = operations.add_segments(segment_5)
         assert code == 201
         assert response["code"] == 201
-       
+
         response, code = operations.add_segments(segment_6)
         assert code == 201
         assert response["code"] == 201
 
         response, code = operations.get_segments(
-            patient_id,
-            sample_id,
-            chromosome_number,
-            start_position,
-            end_position,
+            patient_id, sample_id, chromosome_number, start_position, end_position,
         )
         assert len(response) == 1
         assert code == 200
@@ -371,9 +367,28 @@ def test_get_segment(test_client):
         assert response[0]["end_position"] == end_position
         assert response[0]["copy_number"] == copy_number
         assert (
-            response[0]["copy_number_ploidy_corrected"]
-            == copy_number_ploidy_corrected
+            response[0]["copy_number_ploidy_corrected"] == copy_number_ploidy_corrected
         )
+
+
+def test_get_segments_invalid_data(test_client):
+    """
+    Test 'get_segments' using invalid or non-existent data
+    """
+    context = test_client
+
+    patient_id = 1
+    sample_id = 2
+    chromosome_number = 3
+    start_position = 4
+    end_position = 5
+
+    with context:
+        response, code = operations.get_segments(
+            patient_id, sample_id, chromosome_number, start_position, end_position,
+        )
+        assert response["code"] == 500
+        assert code == 500
 
 
 def load_test_patients():
@@ -403,9 +418,7 @@ def load_test_samples():
     """
     Return some mock sample data
     """
-    samp = lambda x: "".join(
-        random.choice(string.ascii_lowercase) for i in range(x)
-    )
+    samp = lambda x: "".join(random.choice(string.ascii_lowercase) for i in range(x))
 
     patient_1, _, _ = load_test_patients()
 
