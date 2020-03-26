@@ -49,6 +49,7 @@ class Sample(Base):
     patient_id = Column(GUID(),
                         ForeignKey("patient.patient_id"),
                         nullable=False)
+    tags = Column(JsonArray(), default=[])
     cnv_id = relationship("CNV")
 
 
