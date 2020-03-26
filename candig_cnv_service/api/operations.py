@@ -167,7 +167,7 @@ def get_samples(patient_id, tags=None):
         samples = response.get("samples", [])
         samples_dict = dict(sample_id=d["sample_id"])
         if d.get("tags"):
-            samples_dict["tags"] = d["tags"] 
+            samples_dict["tags"] = d["tags"]
         samples.append(samples_dict)
         response["samples"] = samples
 
