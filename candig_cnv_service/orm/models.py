@@ -3,8 +3,15 @@ SQLAlchemy models for database
 """
 
 import json
+import datetime
 
-from sqlalchemy import Column, String, Integer, ForeignKey, Float
+from sqlalchemy import (
+    Column, 
+    String, 
+    Integer, 
+    ForeignKey, 
+    Float,
+    DateTime) 
 from sqlalchemy import TypeDecorator
 from sqlalchemy.orm import relationship
 
@@ -50,6 +57,7 @@ class Sample(Base):
                         ForeignKey("patient.patient_id"),
                         nullable=False)
     tags = Column(JsonArray(), default=[])
+    created = Column(DateTime(), default=datetime.datetime.utcnow())
     cnv_id = relationship("CNV")
 
 
