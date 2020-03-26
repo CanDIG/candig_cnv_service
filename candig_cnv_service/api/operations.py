@@ -5,7 +5,7 @@ Methods to handle incoming CNV service requests
 import flask
 import uuid
 
-from sqlalchemy import exc
+from sqlalchemy import exc, or_
 
 from candig_cnv_service.orm import get_session, ORMException
 from candig_cnv_service.orm.models import Patient, Sample, CNV
@@ -132,12 +132,14 @@ def get_patients():
 
 
 @apilog
-def get_samples(patient_id):
+def get_samples(patient_id, tags=None):
     """
     Return samples of a patient.
 
     :param patient_id: Id of patient
     :type patient_id = string
+    :param tags: List of tags
+    :type tags: list
 
     :returns: samples, 200 on sucess, error code on failure
     :rtype: object, int
@@ -151,6 +153,9 @@ def get_samples(patient_id):
 
     try:
         q = db_session.query(Sample).filter_by(patient_id=patient_id)
+
+        if tags:
+            q = q.filter(or_(*[Sample.tags.contains(tag) for tag in tags]))
     except orm.ORMException as e:
         err = _report_search_failed("sample", e, patient_id=patient_id)
         return err, 500
@@ -160,7 +165,10 @@ def get_samples(patient_id):
     for d in dump:
         response["patient_id"] = d["patient_id"]
         samples = response.get("samples", [])
-        samples.append(d["sample_id"])
+        samples_dict = dict(sample_id=d["sample_id"])
+        if d.get("tags"):
+            samples_dict["tags"] = d["tags"]
+        samples.append(samples_dict)
         response["samples"] = samples
 
     return response, 200
@@ -317,9 +325,7 @@ def add_samples(body):
         return err, 400
 
     try:
-        orm_sample = Sample(
-            sample_id=body["sample_id"], patient_id=body["patient_id"]
-        )
+        orm_sample = Sample(**body)
     except TypeError as e:
         err = _report_conversion_error("sample", e, **body)
         return err, 400

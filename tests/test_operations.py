@@ -167,10 +167,63 @@ def test_get_samples(test_client):
         assert code == 201
 
         response, code = operations.get_samples(patient_1["patient_id"])
+        samples = [s["sample_id"] for s in response["samples"]]
         assert code == 200
+        assert len(samples) == 2
+        assert sample_1["sample_id"] in samples
+        assert sample_2["sample_id"] in samples
+
+
+def test_add_samples_with_tags(test_client):
+    """
+    Test adding samples with tags
+    """
+    context = test_client
+    sample_1, sample_2, patient_1 = load_test_samples_with_tags()
+
+    with context:
+        _, code = operations.add_patients(patient_1)
+        assert code == 201
+
+        _, code = operations.add_samples(sample_1)
+        assert code == 201
+        _, code = operations.add_samples(sample_2)
+        assert code == 201
+
+
+def test_get_samples_with_tags(test_client):
+    """
+    Test 'get_samples' using tags
+    """
+    context = test_client
+    sample_1, sample_2, patient_1 = load_test_samples_with_tags()
+    patient_id = patient_1["patient_id"]
+    tags = sample_1["tags"]
+
+    with context:
+        _, code = operations.add_patients(patient_1)
+        assert code == 201
+
+        _, code = operations.add_samples(sample_1)
+        assert code == 201
+        _, code = operations.add_samples(sample_2)
+        assert code == 201
+
+        response, code = operations.get_samples(patient_id, tags)
+        assert code == 200
+        assert response["patient_id"] == patient_id
         assert len(response["samples"]) == 2
-        assert sample_1["sample_id"] in response["samples"]
-        assert sample_2["sample_id"] in response["samples"]
+
+        response, code = operations.get_samples(patient_id, ["Adult"])
+        assert code == 200
+        assert response["patient_id"] == patient_id
+        assert len(response["samples"]) == 1
+
+        response, code = operations.get_samples(
+            patient_id, ["Non existent tag"]
+        )
+        assert code == 200
+        assert not response
 
 
 def test_get_samples_invalid_patient_id(test_client):
@@ -357,7 +410,11 @@ def test_get_segment(test_client):
         assert response["code"] == 201
 
         response, code = operations.get_segments(
-            patient_id, sample_id, chromosome_number, start_position, end_position,
+            patient_id,
+            sample_id,
+            chromosome_number,
+            start_position,
+            end_position,
         )
         assert len(response) == 1
         assert code == 200
@@ -367,7 +424,8 @@ def test_get_segment(test_client):
         assert response[0]["end_position"] == end_position
         assert response[0]["copy_number"] == copy_number
         assert (
-            response[0]["copy_number_ploidy_corrected"] == copy_number_ploidy_corrected
+            response[0]["copy_number_ploidy_corrected"]
+            == copy_number_ploidy_corrected
         )
 
 
@@ -385,7 +443,11 @@ def test_get_segments_invalid_data(test_client):
 
     with context:
         response, code = operations.get_segments(
-            patient_id, sample_id, chromosome_number, start_position, end_position,
+            patient_id,
+            sample_id,
+            chromosome_number,
+            start_position,
+            end_position,
         )
         assert response["code"] == 500
         assert code == 500
@@ -418,7 +480,9 @@ def load_test_samples():
     """
     Return some mock sample data
     """
-    samp = lambda x: "".join(random.choice(string.ascii_lowercase) for i in range(x))
+    samp = lambda x: "".join(
+        random.choice(string.ascii_lowercase) for i in range(x)
+    )
 
     patient_1, _, _ = load_test_patients()
 
@@ -429,6 +493,31 @@ def load_test_samples():
     sample_3 = {"sample_id": samp(5)}
 
     return sample_1, sample_2, sample_3, patient_1
+
+
+def load_test_samples_with_tags():
+    """
+    Return some mock sample data with tags
+    """
+    samp = lambda x: "".join(
+        random.choice(string.ascii_lowercase) for i in range(x)
+    )
+
+    patient_1, _, _ = load_test_patients()
+
+    sample_1 = {
+        "sample_id": samp(5),
+        "patient_id": patient_1["patient_id"],
+        "tags": ["Canadian", "Ovarian"],
+    }
+
+    sample_2 = {
+        "sample_id": samp(5),
+        "patient_id": patient_1["patient_id"],
+        "tags": ["Canadian", "Liver", "Adult"],
+    }
+
+    return sample_1, sample_2, patient_1
 
 
 def load_test_segment():
