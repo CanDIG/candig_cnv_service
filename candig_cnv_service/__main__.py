@@ -57,7 +57,7 @@ def configure_app():
     app = connexion.FlaskApp(
         __name__, server="tornado", options={"swagger_url": "/"}
     )
-    api_def = "./api/cnv_def.yaml"
+    api_def = "./api/api_definition.yaml"
 
     app.add_api(api_def, strict_validation=True, validate_responses=True)
 
