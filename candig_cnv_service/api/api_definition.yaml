@@ -400,10 +400,12 @@ components:
         patient_id:
           $ref: '#/components/schemas/patient_id'
         samples:
-          type: array
-          items:
-            $ref: '#/components/schemas/sample_id'
-    
+          properties:
+            sample_id:
+              $ref: '#/components/schemas/sample_id'
+            tags:
+              $ref: '#/components/schemas/tags'
+
     CNV:
       type: object
       required:
@@ -428,6 +430,10 @@ components:
     sample_id:
       type: string
       example: COV2202
+      
+    tags:
+      type: array
+      example: ['Canada', 'Ovarian']
     
     start_position:
       type: integer
