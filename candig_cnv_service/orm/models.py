@@ -3,37 +3,20 @@ SQLAlchemy models for database
 """
 
 import json
-import datetime
 
 from sqlalchemy import (
     Column, 
     String, 
     Integer, 
     ForeignKey, 
-    Float,
-    DateTime) 
-from sqlalchemy import TypeDecorator
+    Float)
 from sqlalchemy.orm import relationship
 
 from candig_cnv_service.orm import Base
-from candig_cnv_service.orm.guid import GUID
-
-
-class JsonArray(TypeDecorator):
-    """
-    Custom array type to emulate arrays in sqlite3
-    """
-
-    impl = String
-
-    def process_bind_param(self, value, dialect):
-        return json.dumps(value)
-
-    def process_result_value(self, value, dialect):
-        return json.loads(value)
-
-    def copy(self):
-        return JsonArray(self.impl.length)
+from candig_cnv_service.orm.custom_types import (
+    GUID,
+    JsonArray,
+    TimeStamp)
 
 
 class Patient(Base):
@@ -57,7 +40,8 @@ class Sample(Base):
                         ForeignKey("patient.patient_id"),
                         nullable=False)
     tags = Column(JsonArray(), default=[])
-    created = Column(DateTime(), default=datetime.datetime.utcnow())
+    name = Column(String(100), unique=True, nullable=False)
+    created = Column(TimeStamp())
     cnv_id = relationship("CNV")
 
 

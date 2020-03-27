@@ -190,6 +190,21 @@ def test_add_samples_with_tags(test_client):
         _, code = operations.add_samples(sample_2)
         assert code == 201
 
+def test_add_samples_no_name(test_client):
+    """
+    Test adding sample with missing name
+    """
+    context = test_client
+    sample_1, _, _, patient_1 = load_test_samples()
+    del sample_1["name"]
+ 
+    with context:
+        _, code = operations.add_patients(patient_1)
+        assert code == 201
+
+        response, code = operations.add_samples(sample_1)
+        assert code == 400
+	assert response["code"] == 400    
 
 def test_get_samples_with_tags(test_client):
     """
@@ -486,9 +501,9 @@ def load_test_samples():
 
     patient_1, _, _ = load_test_patients()
 
-    sample_1 = {"sample_id": samp(5), "patient_id": patient_1["patient_id"]}
+    sample_1 = {"sample_id": samp(5), "patient_id": patient_1["patient_id"], "name": patient_1["patient_id"] + "sample_1"}
 
-    sample_2 = {"sample_id": samp(5), "patient_id": patient_1["patient_id"]}
+    sample_2 = {"sample_id": samp(5), "patient_id": patient_1["patient_id"], "name": patient_1["patient_id"] + "sample_2"}
 
     sample_3 = {"sample_id": samp(5)}
 
@@ -509,12 +524,14 @@ def load_test_samples_with_tags():
         "sample_id": samp(5),
         "patient_id": patient_1["patient_id"],
         "tags": ["Canadian", "Ovarian"],
+        "name": "sample_1",
     }
 
     sample_2 = {
         "sample_id": samp(5),
         "patient_id": patient_1["patient_id"],
         "tags": ["Canadian", "Liver", "Adult"],
+        "name": "sample_2",
     }
 
     return sample_1, sample_2, patient_1

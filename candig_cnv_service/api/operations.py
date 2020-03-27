@@ -1,9 +1,10 @@
 """
 Methods to handle incoming CNV service requests
 """
+import datetime
 
 import flask
-import uuid
+import uuid 
 
 from sqlalchemy import exc, or_
 
@@ -168,6 +169,8 @@ def get_samples(patient_id, tags=None):
         samples_dict = dict(sample_id=d["sample_id"])
         if d.get("tags"):
             samples_dict["tags"] = d["tags"]
+        samples_dict["created"] = d["created"]
+        samples_dict["name"] = d["name"]
         samples.append(samples_dict)
         response["samples"] = samples
 
@@ -323,6 +326,12 @@ def add_samples(body):
     if not body.get("sample_id"):
         err = dict(message="No sample_id provided", code=400)
         return err, 400
+
+    if not body.get("name"):
+        err = dict(message="No name provided", code=400)
+        return err, 400
+    
+    body["created"] = datetime.datetime.utcnow() 
 
     try:
         orm_sample = Sample(**body)
