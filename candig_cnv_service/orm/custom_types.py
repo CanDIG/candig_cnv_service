@@ -4,6 +4,7 @@ import json
 from sqlalchemy import TypeDecorator, CHAR, String
 from sqlalchemy.dialects.postgresql import UUID
 
+
 class TimeStamp(TypeDecorator):
     impl = String(14)
 
@@ -12,6 +13,7 @@ class TimeStamp(TypeDecorator):
 
     def process_result_value(self, value, dialect):
         return value
+
 
 class GUID(TypeDecorator):
 
@@ -45,18 +47,19 @@ class GUID(TypeDecorator):
         else:
             return uuid.UUID(value).hex
 
+
 class JsonArray(TypeDecorator):
     """
     Custom array type to emulate arrays in sqlite3
-    """ 
-        
+    """
+
     impl = String
-        
+
     def process_bind_param(self, value, dialect):
         return json.dumps(value)
-            
+
     def process_result_value(self, value, dialect):
-        return json.loads(value) 
-        
-    def copy(self): 
+        return json.loads(value)
+
+    def copy(self):
         return JsonArray(self.impl.length)

@@ -4,7 +4,7 @@ Methods to handle incoming CNV service requests
 import datetime
 
 import flask
-import uuid 
+import uuid
 
 from sqlalchemy import exc, or_
 
@@ -157,7 +157,7 @@ def get_samples(patient_id, tags=None, name=None):
 
         if tags:
             q = q.filter(or_(*[Sample.tags.contains(tag) for tag in tags]))
-    
+
         if name:
             q = q.filter(Sample.name.contains(name))
 
@@ -334,8 +334,8 @@ def add_samples(body):
     if not body.get("name"):
         err = dict(message="No name provided", code=400)
         return err, 400
-    
-    body["created"] = datetime.datetime.utcnow() 
+
+    body["created"] = datetime.datetime.utcnow()
 
     try:
         orm_sample = Sample(**body)
