@@ -5,3 +5,7 @@
 *_env
 *.db
 __pycache__b
+_build
+_static
+_templates
+
