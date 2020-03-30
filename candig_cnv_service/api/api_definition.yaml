@@ -407,8 +407,8 @@ components:
               $ref: '#/components/schemas/tags'
             created:
               $ref: '#/components/schemas/created'
-            name:
-              $ref: '#/components/schemas/name'
+            description:
+              $ref: '#/components/schemas/description'
 
     CNV:
       type: object
@@ -443,7 +443,7 @@ components:
       type: string
       example: '2020-01-16 08:09:21.347777'
       
-    name:
+    description:
       type: string
       example: Canadian Sample
     
