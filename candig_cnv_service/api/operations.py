@@ -1,6 +1,7 @@
 """
 Methods to handle incoming CNV service requests
 """
+import datetime
 
 import flask
 import uuid
@@ -132,7 +133,7 @@ def get_patients():
 
 
 @apilog
-def get_samples(patient_id, tags=None):
+def get_samples(patient_id, tags=None, name=None):
     """
     Return samples of a patient.
 
@@ -156,6 +157,10 @@ def get_samples(patient_id, tags=None):
 
         if tags:
             q = q.filter(or_(*[Sample.tags.contains(tag) for tag in tags]))
+
+        if name:
+            q = q.filter(Sample.name.contains(name))
+
     except orm.ORMException as e:
         err = _report_search_failed("sample", e, patient_id=patient_id)
         return err, 500
@@ -168,6 +173,8 @@ def get_samples(patient_id, tags=None):
         samples_dict = dict(sample_id=d["sample_id"])
         if d.get("tags"):
             samples_dict["tags"] = d["tags"]
+        samples_dict["created"] = d["created"]
+        samples_dict["name"] = d["name"]
         samples.append(samples_dict)
         response["samples"] = samples
 
@@ -323,6 +330,12 @@ def add_samples(body):
     if not body.get("sample_id"):
         err = dict(message="No sample_id provided", code=400)
         return err, 400
+
+    if not body.get("name"):
+        err = dict(message="No name provided", code=400)
+        return err, 400
+
+    body["created"] = datetime.datetime.utcnow()
 
     try:
         orm_sample = Sample(**body)

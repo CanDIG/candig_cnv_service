@@ -405,6 +405,10 @@ components:
               $ref: '#/components/schemas/sample_id'
             tags:
               $ref: '#/components/schemas/tags'
+            created:
+              $ref: '#/components/schemas/created'
+            name:
+              $ref: '#/components/schemas/name'
 
     CNV:
       type: object
@@ -434,6 +438,14 @@ components:
     tags:
       type: array
       example: ['Canada', 'Ovarian']
+      
+    created:
+      type: string
+      example: '2020-01-16 08:09:21.347777'
+      
+    name:
+      type: string
+      example: Canadian Sample
     
     start_position:
       type: integer
@@ -460,3 +472,4 @@ components:
     chromosome_number:
       type: string
       example: 5
+
