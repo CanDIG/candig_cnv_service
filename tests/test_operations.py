@@ -168,10 +168,44 @@ def test_get_samples(test_client):
 
         response, code = operations.get_samples(patient_1["patient_id"])
         samples = [s["sample_id"] for s in response["samples"]]
+        names = [s["name"] for s in response["samples"]]
         assert code == 200
         assert len(samples) == 2
         assert sample_1["sample_id"] in samples
+        assert sample_1["name"] in names
         assert sample_2["sample_id"] in samples
+        assert sample_2["name"] in names
+       
+
+def test_get_samples_using_name(test_client):
+    """
+    Test 'get_samples' method using a name
+    """
+
+    context = test_client
+
+    sample_1, sample_2, _, patient_1 = load_test_samples()
+    sample_3, sample_4, _, patient_2 = load_test_samples()
+
+    with context:
+        _, code = operations.add_patients(patient_1)
+        assert code == 201
+        _, code = operations.add_patients(patient_2)
+        assert code == 201
+
+        _, code = operations.add_samples(sample_1)
+        assert code == 201
+        _, code = operations.add_samples(sample_2)
+        assert code == 201
+
+        _, code = operations.add_samples(sample_3)
+        assert code == 201
+        _, code = operations.add_samples(sample_4)
+        assert code == 201
+
+        response, code = operations.get_samples(patient_1["patient_id"], name=sample_1["name"])
+        assert code == 200
+        assert response["patient_id"] == sample_1["patient_id"] 
 
 
 def test_add_samples_with_tags(test_client):
@@ -204,7 +238,7 @@ def test_add_samples_no_name(test_client):
 
         response, code = operations.add_samples(sample_1)
         assert code == 400
-	assert response["code"] == 400    
+        assert response["code"] == 400    
 
 def test_get_samples_with_tags(test_client):
     """
