@@ -168,18 +168,18 @@ def test_get_samples(test_client):
 
         response, code = operations.get_samples(patient_1["patient_id"])
         samples = [s["sample_id"] for s in response["samples"]]
-        names = [s["name"] for s in response["samples"]]
+        descriptions = [s["description"] for s in response["samples"]]
         assert code == 200
         assert len(samples) == 2
         assert sample_1["sample_id"] in samples
-        assert sample_1["name"] in names
+        assert sample_1["description"] in descriptions
         assert sample_2["sample_id"] in samples
-        assert sample_2["name"] in names
+        assert sample_2["description"] in descriptions
        
 
-def test_get_samples_using_name(test_client):
+def test_get_samples_using_description(test_client):
     """
-    Test 'get_samples' method using a name
+    Test 'get_samples' method using a description
     """
 
     context = test_client
@@ -203,7 +203,7 @@ def test_get_samples_using_name(test_client):
         _, code = operations.add_samples(sample_4)
         assert code == 201
 
-        response, code = operations.get_samples(patient_1["patient_id"], name=sample_1["name"])
+        response, code = operations.get_samples(patient_1["patient_id"], description=sample_1["description"])
         assert code == 200
         assert response["patient_id"] == sample_1["patient_id"] 
 
@@ -224,13 +224,13 @@ def test_add_samples_with_tags(test_client):
         _, code = operations.add_samples(sample_2)
         assert code == 201
 
-def test_add_samples_no_name(test_client):
+def test_add_samples_no_description(test_client):
     """
-    Test adding sample with missing name
+    Test adding sample with missing description
     """
     context = test_client
     sample_1, _, _, patient_1 = load_test_samples()
-    del sample_1["name"]
+    del sample_1["description"]
  
     with context:
         _, code = operations.add_patients(patient_1)
@@ -535,9 +535,9 @@ def load_test_samples():
 
     patient_1, _, _ = load_test_patients()
 
-    sample_1 = {"sample_id": samp(5), "patient_id": patient_1["patient_id"], "name": patient_1["patient_id"] + "sample_1"}
+    sample_1 = {"sample_id": samp(5), "patient_id": patient_1["patient_id"], "description": patient_1["patient_id"] + "sample_1"}
 
-    sample_2 = {"sample_id": samp(5), "patient_id": patient_1["patient_id"], "name": patient_1["patient_id"] + "sample_2"}
+    sample_2 = {"sample_id": samp(5), "patient_id": patient_1["patient_id"], "description": patient_1["patient_id"] + "sample_2"}
 
     sample_3 = {"sample_id": samp(5)}
 
@@ -558,14 +558,14 @@ def load_test_samples_with_tags():
         "sample_id": samp(5),
         "patient_id": patient_1["patient_id"],
         "tags": ["Canadian", "Ovarian"],
-        "name": "sample_1",
+        "description": "sample_1",
     }
 
     sample_2 = {
         "sample_id": samp(5),
         "patient_id": patient_1["patient_id"],
         "tags": ["Canadian", "Liver", "Adult"],
-        "name": "sample_2",
+        "description": "sample_2",
     }
 
     return sample_1, sample_2, patient_1

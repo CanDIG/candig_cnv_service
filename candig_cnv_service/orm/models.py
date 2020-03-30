@@ -31,7 +31,7 @@ class Sample(Base):
         GUID(), ForeignKey("patient.patient_id"), nullable=False
     )
     tags = Column(JsonArray(), default=[])
-    name = Column(String(100), unique=True, nullable=False)
+    description = Column(String(100), unique=True, nullable=False)
     created = Column(TimeStamp())
     cnv_id = relationship("CNV")
 
