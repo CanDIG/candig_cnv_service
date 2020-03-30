@@ -133,7 +133,7 @@ def get_patients():
 
 
 @apilog
-def get_samples(patient_id, tags=None):
+def get_samples(patient_id, tags=None, name=None):
     """
     Return samples of a patient.
 
@@ -157,6 +157,10 @@ def get_samples(patient_id, tags=None):
 
         if tags:
             q = q.filter(or_(*[Sample.tags.contains(tag) for tag in tags]))
+    
+        if name:
+            q = q.filter(Sample.name.contains(name))
+
     except orm.ORMException as e:
         err = _report_search_failed("sample", e, patient_id=patient_id)
         return err, 500
