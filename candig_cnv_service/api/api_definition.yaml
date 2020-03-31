@@ -400,10 +400,16 @@ components:
         patient_id:
           $ref: '#/components/schemas/patient_id'
         samples:
-          type: array
-          items:
-            $ref: '#/components/schemas/sample_id'
-    
+          properties:
+            sample_id:
+              $ref: '#/components/schemas/sample_id'
+            tags:
+              $ref: '#/components/schemas/tags'
+            created:
+              $ref: '#/components/schemas/created'
+            description:
+              $ref: '#/components/schemas/description'
+
     CNV:
       type: object
       required:
@@ -428,6 +434,18 @@ components:
     sample_id:
       type: string
       example: COV2202
+      
+    tags:
+      type: array
+      example: ['Canada', 'Ovarian']
+      
+    created:
+      type: string
+      example: '2020-01-16 08:09:21.347777'
+      
+    description:
+      type: string
+      example: Canadian Sample
     
     start_position:
       type: integer
@@ -454,3 +472,4 @@ components:
     chromosome_number:
       type: string
       example: 5
+
