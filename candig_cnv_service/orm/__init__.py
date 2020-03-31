@@ -86,6 +86,16 @@ def get_session(**kwargs):
     return _DB_SESSION
 
 
+def get_engine():
+    """
+    Return the engine for CORE related operations
+    """
+    global _ENGINE
+    if not _ENGINE:
+        raise exc.DatabaseError
+    return _ENGINE
+
+
 def close_session():
     """
     Close the database session

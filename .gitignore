@@ -4,8 +4,7 @@
 .idea
 *_env
 *.db
-__pycache__b
+__pycache__
 _build
 _static
 _templates
-
