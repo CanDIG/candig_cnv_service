@@ -20,26 +20,31 @@ Fetch Samples
 -------------
 Description: To fetch all the samples of a patient, make a query to /cnvariant/patients/samples endpoint passing the patient_id as an argument.
 Example:
+
 .. code-block:: bash
    
     /cnvariant/patients/samples?patient_id=d290f1ee-6c54-4b01-90e6-d701748f0851
 
 In addition, you can fetch samples using tags:
+
 .. code-block:: bash
     
     /cnvariant/patients/samples?patient_id=d290f1ee-6c54-4b01-90e6-d701748f0851&tags=canadian,ovarian
 
 Or description
+
 .. code-block:: bash
     
     /cnvariant/patients/samples?patient_id=d290f1ee-6c54-4b01-90e6-d701748f0851&description=Canadian
 
 Or both:
+
 .. code-block:: bash
     
     /cnvariant/patients/samples?patient_id=d290f1ee-6c54-4b01-90e6-d701748f0851&description=Canadian&tags=canadian,ovaria
 
 The response would follow a structure similar to this:
+
 .. code-block:: json
 
  {
@@ -58,11 +63,13 @@ Fetch Segments
 --------------
 Description: To fetch a segment, make a query to /cnvariant/patients/samples/cnv endpoint passign the  patient_id, sample_id, chromosome_number, start_position and end_position.
 Example:
+
 .. code-block:: bash
 
     /cnvariant/patients/samples/cnv?patient_id=d290f1ee-6c54-4b01-90e6-d701748f0851&sample_id=COV2202&chromosome_number=5&start_position=12523&end_position=23425
 
 The response would follow a structure similar to this:
+
 .. code-block:: json
 
  [
