@@ -44,6 +44,7 @@ class CNV(Base):
 
     __tablename__ = "cnv"
     # cnv_id = Column(Integer, primary_key=True)
+
     sample_id = Column(
         String(100), ForeignKey("sample.sample_id"), primary_key=True
     )
