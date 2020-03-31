@@ -85,6 +85,7 @@ def get_session(**kwargs):
         Base.query = _DB_SESSION.query_property()
     return _DB_SESSION
 
+
 def get_engine():
     """
     Return the engine for CORE related operations
@@ -93,6 +94,7 @@ def get_engine():
     if not _ENGINE:
         raise exc.DatabaseError
     return _ENGINE
+
 
 def close_session():
     """

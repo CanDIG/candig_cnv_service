@@ -21,6 +21,7 @@ class AuthorizationError(Exception):
         message = "Key not authorized to perform this action"
         super().__init__(message)
 
+
 class FileTypeError(Exception):
     """
     Custom exception for inappropriate CNV file types
@@ -30,14 +31,16 @@ class FileTypeError(Exception):
                    "not {}".format(filetype))
         super().__init__(message)
 
+
 class KeyExistenceError(Exception):
     """
-    Custom exception for missing Patient or Sample IDs 
+    Custom exception for missing Patient or Sample IDs
     """
     def __init__(self, key):
         message = ("Missing {} when attempting to add CNV file"
                    .format(key))
         super().__init__(message)
+
 
 class HeaderError(Exception):
     """
