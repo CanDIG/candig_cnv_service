@@ -14,7 +14,7 @@ First, create and activate a  virtualenv with Python 3.6.x:
 
 .. code-block:: bash
    
-    python -m venv venv_name
+   python -m venv venv_name
    source venv_name/bin/activate
 
 Once your virtual environment is created, run:
@@ -35,4 +35,4 @@ By default it will run on address 0.0.0.0 and port 8870. You can change by runni
 
 .. code-block:: bash
    
-    python -m candig_cnv_service --host 127.0.0.1--port 8080
+    python -m candig_cnv_service --host 127.0.0.1 --port 8080
