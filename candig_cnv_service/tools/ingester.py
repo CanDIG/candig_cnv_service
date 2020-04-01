@@ -26,8 +26,8 @@ class Ingester:
     :type patient: UUID
     :param sample: Sample ID that the CNV file belongs to
     :type sample: str
-    :param cnv_file: Query string or data needed by endpoint specified in endpoint_path
-    :type cnv_file: object, {param0=value0, paramN=valueN} for GET, JSON struct dependent on service endpoint for POST
+    :param cnv_file: Location of the CNV file to ingest
+    :type cnv_file: str
     """
     def __init__(self, database, patient, sample, cnv_file):
         """Constructor method
@@ -71,8 +71,8 @@ class Ingester:
 
     def db_setup(self):
         """
-        Connects to the database given using SQLAlchemy Core and 
-        attempts to query the Sample ID provided. Returns the 
+        Connects to the database given using SQLAlchemy Core and
+        attempts to query the Sample ID provided. Returns the
         engine if successful or an error if the Sample cannot
         be located.
 
@@ -153,7 +153,7 @@ class Ingester:
         manner rather than a single upload. This allows
         for a partial ingest as well as error checking
         for each row.
-        
+
         Should only be called if an integrity error
         in upload() is encountered and --sequential is
         set to true

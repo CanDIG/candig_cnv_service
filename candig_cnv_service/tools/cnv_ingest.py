@@ -10,8 +10,9 @@ from candig_cnv_service.api.exceptions import FileTypeError
 
 def main(args=None):
     """
-    Main script for ingesting CNV files through the CLI. Call this script along with
-    all the arguments needed. patient, sample and file are all required.
+    Main script for ingesting CNV files through the CLI. Call this script
+    along with all the arguments needed. patient, sample and file are all
+    required.
     """
     if args is None:
         args = sys.argv[1:]
