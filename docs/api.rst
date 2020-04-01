@@ -55,13 +55,12 @@ The response is a json object similar to this:
 
 .. code-block:: json
 
- {'patient_id': 'd290f1ee-6c54-4b01-90e6-d701748f0851',
- 'samples': [{'access_level': 2,
-              'created': '2020-01-16 08:09:21.347777',
-              'description': 'Canadian Sample',
-              'sample_id': 'COV2202',
-              'tags': ['Canada', 'Ovarian']}]}
-
+ {"patient_id": "d290f1ee-6c54-4b01-90e6-d701748f0851",
+ "samples": [{"access_level": 2,
+              "created": "2020-01-16 08:09:21.347777",
+              "description": "Canadian Sample",
+              "sample_id": "COV2202",
+              "tags": ["Canada", "Ovarian"]}]}
 
 --------------
 Fetch Segments
@@ -77,13 +76,13 @@ The response is a json object similar to this:
 
 .. code-block:: json
 
- [{'chromosome_number': '5',
-   'copy_number': -0.16,
-   'copy_number_ploidy_corrected': 0,
-   'end_position': 23425,
-   'start_position': 12523},
-  {'chromosome_number': '5',
-   'copy_number': -0.16,
-   'copy_number_ploidy_corrected': 0,
-   'end_position': 34326,
-   'start_position': 23426}]
+ [{"chromosome_number": "5",
+   "copy_number": -0.16,
+   "copy_number_ploidy_corrected": 0,
+   "end_position": 23425,
+   "start_position": 12523},
+  {"chromosome_number": "5",
+   "copy_number": -0.16,
+   "copy_number_ploidy_corrected": 0,
+   "end_position": 34326,
+   "start_position": 23426}]
