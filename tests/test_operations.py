@@ -477,6 +477,17 @@ def test_get_segment(test_client):
             == copy_number_ploidy_corrected
         )
 
+        response, code = operations.get_segments(
+            patient_id,
+            sample_id,
+            chromosome_number,
+            start_position=12522,
+            end_position=34326,
+        )
+        
+        assert code == 200
+        assert len(response) == 2
+
 
 def test_get_segments_invalid_data(test_client):
     """
