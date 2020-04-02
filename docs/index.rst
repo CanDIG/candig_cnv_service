@@ -32,6 +32,7 @@ Usage
    :maxdepth: 2
 
    api
+   tools
 
 ********
 Appendix
