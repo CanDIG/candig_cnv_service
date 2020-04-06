@@ -43,7 +43,7 @@ def main(args=None):
     app.app.config["self"] = "http://{}/{}".format(args.host, args.port)
     if not os.path.exists(args.database):
         os.mkdir(os.getcwd()+"/data")
-    define("dbfile", default=args.database)    
+    define("dbfile", default=args.database)
     candig_cnv_service.orm.init_db()
     db_session = candig_cnv_service.orm.get_session()
 
