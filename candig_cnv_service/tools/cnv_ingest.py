@@ -4,7 +4,7 @@ import argparse
 
 from sqlalchemy.exc import IntegrityError
 
-from ingester import Ingester
+from candig_cnv_service.tools.ingester import Ingester
 from candig_cnv_service.api.exceptions import FileTypeError
 
 
