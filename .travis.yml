@@ -8,4 +8,4 @@ install:
 
 script:
     - flake8 candig_cnv_service/
-    - pytest --cov=candig_cnv_service tests
+    - pytest --cov=candig_cnv_service tests/test_operations.py
