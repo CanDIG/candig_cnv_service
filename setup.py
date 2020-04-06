@@ -36,6 +36,7 @@ setuptools.setup(
     entry_points={
         "console_scripts": [
             "candig_cnv_service = candig_cnv_service.__main__:main",
+            "cnv_ingest = candig_cnv_service.tools.cnv_ingest:main"
         ]
     },
 )
