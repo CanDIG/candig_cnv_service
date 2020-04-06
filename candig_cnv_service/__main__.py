@@ -30,7 +30,7 @@ def main(args=None):
     try:
         log_handler = logging.FileHandler(args.logfile)
     except FileNotFoundError:
-        os.mkdir(os.getcwd()+"/log")
+        os.mkdir(os.getcwd() + "/log")
         log_handler = logging.FileHandler(args.logfile)
 
     numeric_loglevel = getattr(logging, args.loglevel.upper())
@@ -42,7 +42,7 @@ def main(args=None):
     app.app.config["name"] = args.name
     app.app.config["self"] = "http://{}/{}".format(args.host, args.port)
     if not os.path.exists(args.database):
-        os.mkdir(os.getcwd()+"/data")
+        os.mkdir(os.getcwd() + "/data")
     define("dbfile", default=args.database)
     candig_cnv_service.orm.init_db()
     db_session = candig_cnv_service.orm.get_session()
@@ -51,7 +51,12 @@ def main(args=None):
     def shutdown_session(exception=None):
         db_session.remove()
 
-    return app, args.port
+    app.app.logger.info(
+        "{} running at {}".format(
+            app.app.config["name"], app.app.config["self"]
+        )
+    )
+    app.run(port=args.port)
 
 
 def configure_app():
@@ -84,10 +89,4 @@ app = configure_app()
 application = app.app
 
 if __name__ == "__main__":
-    APPLICATION, PORT = main()
-    APPLICATION.app.logger.info(
-        "{} running at {}".format(
-            APPLICATION.app.config["name"], APPLICATION.app.config["self"]
-        )
-    )
-    APPLICATION.run(port=PORT)
+    main()

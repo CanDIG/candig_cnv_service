@@ -33,4 +33,9 @@ setuptools.setup(
         "Natural Language :: English",        
     ],
     python_requires='>=3.6',
+    entry_points={
+        "console_scripts": [
+            "candig_cnv_service = candig_cnv_service.__main__:main",
+        ]
+    },
 )
