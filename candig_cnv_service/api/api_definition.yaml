@@ -400,15 +400,26 @@ components:
         patient_id:
           $ref: '#/components/schemas/patient_id'
         samples:
-          properties:
-            sample_id:
-              $ref: '#/components/schemas/sample_id'
-            tags:
-              $ref: '#/components/schemas/tags'
-            created:
-              $ref: '#/components/schemas/created'
-            description:
-              $ref: '#/components/schemas/description'
+          type: array
+          items:
+            $ref: '#/components/schemas/Sample'
+    
+    Sample:
+      type: object
+      required:
+        - sample_id
+        - access_level
+      properties:
+        sample_id:
+          $ref: '#/components/schemas/sample_id'
+        access_level:
+          $ref: '#/components/schemas/access_level'
+        tags:
+          $ref: '#/components/schemas/tags'
+        created:
+          $ref: '#/components/schemas/created'
+        description:
+          $ref: '#/components/schemas/description'
 
     CNV:
       type: object
@@ -425,11 +436,19 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Segment'
+        
           
     patient_id:
       type: string
       format: uuid
       example: d290f1ee-6c54-4b01-90e6-d701748f0851
+    
+    access_level:
+      type: integer
+      format: int32
+      example: 2
+      minimum: 0
+      maximum: 4
     
     sample_id:
       type: string
@@ -472,4 +491,3 @@ components:
     chromosome_number:
       type: string
       example: 5
-
