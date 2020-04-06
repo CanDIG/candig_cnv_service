@@ -6,8 +6,8 @@ with open("README.md", "r") as fh:
 setuptools.setup(
     name="candig-cnv-service", # Replace with your own username
     version="0.0.1",
-    author="Felipe Coral-Sasso",
-    author_email="fcoralsasso@bcgsc.ca",
+    author="BCGSC",
+    author_email="dnaidoo@bcgsc.ca, fcoralsasso@bcgsc.ca",
     description="Implementation of Copy-number variation",
     long_description=long_description,
     long_description_content_type="text/markdown",
