@@ -6,6 +6,7 @@ import logging
 
 import connexion
 
+from sqlite3 import OperationalError
 from tornado.options import define
 import candig_cnv_service.orm
 
@@ -41,8 +42,9 @@ def main(args=None):
 
     app.app.config["name"] = args.name
     app.app.config["self"] = "http://{}/{}".format(args.host, args.port)
-
-    define("dbfile", default=args.database)
+    if not os.path.exists(args.database):
+        os.mkdir(os.getcwd()+"/data")
+    define("dbfile", default=args.database)    
     candig_cnv_service.orm.init_db()
     db_session = candig_cnv_service.orm.get_session()
 
