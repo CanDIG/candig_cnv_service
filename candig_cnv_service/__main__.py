@@ -6,7 +6,6 @@ import logging
 
 import connexion
 
-from sqlite3 import OperationalError
 from tornado.options import define
 import candig_cnv_service.orm
 
