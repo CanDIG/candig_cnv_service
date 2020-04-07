@@ -9,7 +9,7 @@ CanDIg Copy Number Variation Service
 
 This is the documentation for candig_cnv_service.
 
-The candig_cnv_service is a CanDIG project and can be started using ``python -m candig_cnv_service``
+The candig_cnv_service is a CanDIG project and can be started using ``candig_cnv_service`` command.
 
 If you need help or want to report a bug, please refer to our :ref:`contribution`
 
