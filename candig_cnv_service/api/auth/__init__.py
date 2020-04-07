@@ -51,7 +51,7 @@ class KeyCloakHandler:
             return jwt.ExpiredSignature
         except jwt.DecodeError:
             return jwt.DecodeError
-        
+
 
 def create_handler(config):
     global _HANDLER
