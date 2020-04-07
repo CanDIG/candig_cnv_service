@@ -2,7 +2,8 @@
 Auth module for service
 """
 
-# import jwt
+import json
+import jwt
 from jwt.algorithms import RSAAlgorithm
 from keycloak import KeycloakOpenID
 import requests
@@ -23,7 +24,7 @@ class KeyCloakHandler:
     def connect_to_keycloak(self):
         keycloak_openid = KeycloakOpenID(
             server_url=self.config['KC_SERVER'] + "/auth/",
-            client_id=self.configs['OIDC_CLIENT'],
+            client_id=self.config['OIDC_CLIENT'],
             realm_name=self.config['KC_REALM'],
             client_secret_key=self.config['OIDC_CLIENT_SECRET'],
             verify=True
@@ -32,8 +33,25 @@ class KeyCloakHandler:
 
     def get_key_set(self):
         key_response = requests.get(self.conn.well_know()['jwks_uri'])
-        print(key_response)
+        print(key_response.json()['keys'][0])
+        return json.dumps(key_response.json()['keys'][0])
 
+    def decode_token(self, token):
+        """
+        Decode token using RS256
+        """
+        try:
+            decoded = jwt.decode(token,
+                                 self.public_key,
+                                 audience=self.configs['OIDC_AUDIENCE'],
+                                 algorithms=['RS256'])
+            return {"roles": decoded['realm_access']['roles'],
+                    "user": decoded['preferred_username']}
+        except jwt.ExpiredSignatureError:
+            return jwt.ExpiredSignature
+        except jwt.DecodeError:
+            return jwt.DecodeError
+        
 
 def create_handler(config):
     global _HANDLER
