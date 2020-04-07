@@ -40,7 +40,7 @@ class Ingester:
         self.engine = self.db_setup()
         self.segments = []
         self.required_headers = [
-            'chromosome_number',
+            'chromsome',
             'start_position',
             'end_position',
             'copy_number',

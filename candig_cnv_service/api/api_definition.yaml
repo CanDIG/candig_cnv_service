@@ -228,11 +228,11 @@ paths:
           schema:
             $ref: '#/components/schemas/sample_id'
         - in: query
-          name: chromosome_number
+          name: chromsome
           description: Chromosome to be queried
           required: true
           schema:
-            $ref: '#/components/schemas/chromosome_number'
+            $ref: '#/components/schemas/chromsome'
         - in: query
           name: start_position
           description: Starting position for query
@@ -350,14 +350,14 @@ components:
     Segment:
       type: object
       required:
-        - chromosome_number
+        - chromsome
         - start_position
         - end_position
         - copy_number
         - copy_number_ploidy_corrected
       properties:
-        chromosome_number:
-          $ref: '#/components/schemas/chromosome_number'
+        chromsome:
+          $ref: '#/components/schemas/chromsome'
         start_position:
           $ref: '#/components/schemas/start_position'
         end_position:
@@ -488,6 +488,6 @@ components:
       format: int32
       minimum: 0
     
-    chromosome_number:
+    chromsome:
       type: string
       example: 5

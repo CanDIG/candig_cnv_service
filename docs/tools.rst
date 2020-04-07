@@ -9,9 +9,9 @@ file is ingested.
 The Ingester class currently accepts CSV and TSV formatted CNV files. These files should contain
 the following headers otherwise they will not be accepted:
 
-================= ============== ============ =========== ============================
-chromosome_number start_position end_position copy_number copy_number_ploidy_corrected
-================= ============== ============ =========== ============================
+========= ============== ============ =========== ============================
+chromsome start_position end_position copy_number copy_number_ploidy_corrected
+========= ============== ============ =========== ============================
 
 Other than header validation, the ingester **does not** check the contents of the file
 at this time. It is up to the uploader to insure that the data is valid.
