@@ -65,23 +65,23 @@ The response is a json object similar to this:
 --------------
 Fetch Segments
 --------------
-Description: To fetch a segment, make a query to /cnvariant/patients/samples/cnv endpoint passign the  patient_id, sample_id, chromsome, start_position and end_position.
+Description: To fetch a segment, make a query to /cnvariant/patients/samples/cnv endpoint passign the  patient_id, sample_id, chromosome, start_position and end_position.
 Example:
 
 .. code-block:: bash
 
-    /cnvariant/patients/samples/cnv?patient_id=d290f1ee-6c54-4b01-90e6-d701748f0851&sample_id=COV2202&chromsome=5&start_position=12522&end_position=34326
+    /cnvariant/patients/samples/cnv?patient_id=d290f1ee-6c54-4b01-90e6-d701748f0851&sample_id=COV2202&chromosome=5&start_position=12522&end_position=34326
 
 The response is a json object similar to this:
 
 .. code-block:: json
 
- [{"chromsome": "5",
+ [{"chromosome": "5",
    "copy_number": -0.16,
    "copy_number_ploidy_corrected": 0,
    "end_position": 23425,
    "start_position": 12523},
-  {"chromsome": "5",
+  {"chromosome": "5",
    "copy_number": -0.16,
    "copy_number_ploidy_corrected": 0,
    "end_position": 34326,

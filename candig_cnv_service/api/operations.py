@@ -183,7 +183,7 @@ def get_samples(patient_id, tags=None, description=None):
 
 @apilog
 def get_segments(
-    patient_id, sample_id, chromsome, start_position, end_position
+    patient_id, sample_id, chromosome, start_position, end_position
 ):
     """
     Return segments within the specified region
@@ -192,7 +192,7 @@ def get_segments(
     :type: string
     :param: sample_id: Id of sample
     :type: string
-    :param: chromsome: Chromosome number
+    :param: chromosome: Chromosome number
     :type: string
     :param: start_position: Start position
     :type: integer
@@ -212,15 +212,15 @@ def get_segments(
 
     if isinstance(sample_id, int):
         sample_id = str(sample_id)
-    if isinstance(chromsome, int):
-        chromsome = str(chromsome)
+    if isinstance(chromosome, int):
+        chromosome = str(chromosome)
 
     try:
         q = (
             db_session.query(CNV)
             .join(Sample)
             .filter(
-                CNV.chromsome == chromsome,
+                CNV.chromosome == chromosome,
                 Sample.sample_id == sample_id,
                 Sample.patient_id == patient_id,
             )
@@ -231,7 +231,7 @@ def get_segments(
             e,
             patient_id=patient_id,
             sample_id=sample_id,
-            chromsome=chromsome,
+            chromosome=chromosome,
         )
         return err, 400
 

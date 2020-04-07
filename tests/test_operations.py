@@ -175,7 +175,7 @@ def test_get_samples(test_client):
         assert sample_1["description"] in descriptions
         assert sample_2["sample_id"] in samples
         assert sample_2["description"] in descriptions
-       
+
 
 def test_get_samples_using_description(test_client):
     """
@@ -224,6 +224,7 @@ def test_add_samples_with_tags(test_client):
         _, code = operations.add_samples(sample_2)
         assert code == 201
 
+
 def test_add_samples_no_description(test_client):
     """
     Test adding sample with missing description
@@ -238,7 +239,8 @@ def test_add_samples_no_description(test_client):
 
         response, code = operations.add_samples(sample_1)
         assert code == 400
-        assert response["code"] == 400    
+        assert response["code"] == 400 
+
 
 def test_get_samples_with_tags(test_client):
     """
@@ -411,7 +413,7 @@ def test_get_segment(test_client):
 
     patient_id = segment_1["patient_id"]
     sample_id = segment_1["sample_id"]
-    chromosome_number = segment_1["segments"][0]["chromosome_number"]
+    chromosome = segment_1["segments"][0]["chromosome"]
     start_position = segment_1["segments"][0]["start_position"]
     end_position = segment_1["segments"][0]["end_position"]
     copy_number = segment_1["segments"][0]["copy_number"]
@@ -461,14 +463,14 @@ def test_get_segment(test_client):
         response, code = operations.get_segments(
             patient_id,
             sample_id,
-            chromosome_number,
+            chromosome,
             start_position,
             end_position,
         )
         assert len(response) == 1
         assert code == 200
 
-        assert response[0]["chromosome_number"] == chromosome_number
+        assert response[0]["chromosome"] == chromosome
         assert response[0]["start_position"] == start_position
         assert response[0]["end_position"] == end_position
         assert response[0]["copy_number"] == copy_number
@@ -480,7 +482,7 @@ def test_get_segment(test_client):
         response, code = operations.get_segments(
             patient_id,
             sample_id,
-            chromosome_number,
+            chromosome,
             start_position=12522,
             end_position=34326,
         )
@@ -497,7 +499,7 @@ def test_get_segments_invalid_data(test_client):
 
     patient_id = 1
     sample_id = 2
-    chromosome_number = 3
+    chromosome = 3
     start_position = 4
     end_position = 5
 
@@ -505,7 +507,7 @@ def test_get_segments_invalid_data(test_client):
         response, code = operations.get_segments(
             patient_id,
             sample_id,
-            chromosome_number,
+            chromosome,
             start_position,
             end_position,
         )
@@ -594,7 +596,7 @@ def load_test_segment():
         "sample_id": sample_1["sample_id"],
         "segments": [
             {
-                "chromosome_number": "5",
+                "chromosome": "5",
                 "start_position": 12523,
                 "end_position": 23425,
                 "copy_number": -0.16,
@@ -608,7 +610,7 @@ def load_test_segment():
         "sample_id": sample_1["sample_id"],
         "segments": [
             {
-                "chromosome_number": "5",
+                "chromosome": "5",
                 "start_position": 23426,
                 "end_position": 34326,
                 "copy_number": -0.16,
@@ -622,7 +624,7 @@ def load_test_segment():
         "sample_id": sample_1["sample_id"],
         "segments": [
             {
-                "chromosome_number": "5",
+                "chromosome": "5",
                 "start_position": 34327,
                 "end_position": 44296,
                 "copy_number": -0.16,
