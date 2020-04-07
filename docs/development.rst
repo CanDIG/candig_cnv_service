@@ -38,7 +38,7 @@ To start the service, you may run:
    candig_cnv_service
 
 
-By default it will run on address 0.0.0.0 and port 8870. You can change by running the previous command adding  the desired address and port:
+By default it will run on address 0.0.0.0 and port 8870. You may change it by running the previous command adding the desired address and port:
 
 .. code-block:: bash
    
