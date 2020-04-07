@@ -8,6 +8,8 @@ import connexion
 
 from tornado.options import define
 import candig_cnv_service.orm
+from candig_cnv_service.tools.parser import get_config_dict
+import candig_cnv_service.api.auth as auth
 
 
 def main(args=None):
@@ -19,6 +21,7 @@ def main(args=None):
     parser.add_argument("--host", default="0.0.0.0")
     parser.add_argument("--database", default="./data/cnv_service.db")
     parser.add_argument("--logfile", default="./log/cnv_service.log")
+    parser.add_argument("--auth", default="./configs/auth.json")
     parser.add_argument(
         "--loglevel",
         default="INFO",
@@ -45,6 +48,10 @@ def main(args=None):
     define("dbfile", default=args.database)
     candig_cnv_service.orm.init_db()
     db_session = candig_cnv_service.orm.get_session()
+
+    app.app.config.update(get_config_dict(args.auth))
+
+    auth.create_handler(app.app.config["keycloak"])
 
     @app.app.teardown_appcontext
     def shutdown_session(exception=None):

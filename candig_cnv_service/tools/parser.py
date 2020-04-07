@@ -19,7 +19,7 @@ def get_config_dict(file_path, logger=None):
         if logger:
             logger.warning("Unable to find config file. "
                            "Please check spelling or place "
-                           "a 'X.json' at "
+                           "an 'auth.json' at "
                            "{}/configs".format(os.getcwd()))
             exit()
         else:

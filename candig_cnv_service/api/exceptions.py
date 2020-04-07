@@ -50,3 +50,12 @@ class HeaderError(Exception):
         message = ("Headers in provided CNV file do not match "
                    "required headers: {}".format(required))
         super().__init__(message)
+
+
+class HandlerError(Exception):
+    """
+    Custom exception for uninitialized Keycloak Handler
+    """
+    def __init__(self):
+        message = ("Keycloak Handler not initialized")
+        super().__init__(message)
