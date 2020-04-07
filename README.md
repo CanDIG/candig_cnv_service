@@ -7,7 +7,7 @@ Implementation of Copy-number variation
 
 The CNV service can be installed in a py3.7+ virtual enviroment:
 ```
-python setup.py install
+pip install -e .
 ```
 
 ### Running
