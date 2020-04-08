@@ -7,11 +7,11 @@ import flask
 import jwt
 # from jwt.algorithms import RSAAlgorithm
 # from keycloak import KeycloakOpenID
-# import requests
+import requests
 
 from candig_cnv_service.api.logging import structured_log as struct_log
 from candig_cnv_service.api.logging import logger
-
+from candig_cnv_service.api.auth import get_handler
 
 def _report_proxy_auth_error(key, **kwargs):
     """
@@ -42,20 +42,15 @@ def get_access_level():
     if not fh.get("Authorization"):
         _report_proxy_auth_error("NO AUTH HEADER")
 
-    api_key = fh["Authorization"].split("Bearer ")[1]
-    key = ""  # TODO
-    pub_key = '-----BEGIN PUBLIC KEY-----\n'+key+'\n-----END PUBLIC KEY-----'
-
-    decode = jwt.decode(api_key, pub_key, audience='ga4gh', algorithms='RS256')
-
-    # decode = jwt.decode(api_key, verify=False)
+    token = fh["Authorization"].split("Bearer ")[1]
+    decode = get_handler().decode_token(token)
 
     print(decode)
 
-    # url = "http://0.0.0.0:8885/authz/acess"
-    # headers = fh
-    # request_handle = requests.Session()
-    # resp = request_handle.get("{}".format(url), headers=headers, timeout=5)
+    url = "http://0.0.0.0:8885/authz/acess"
+    headers = fh
+    request_handle = requests.Session()
+    resp = request_handle.get("{}".format(url), headers=headers, timeout=5)
 
     # print(resp)
     pass

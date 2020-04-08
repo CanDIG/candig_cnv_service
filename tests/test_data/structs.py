@@ -9,7 +9,7 @@ class testHeader():
         return self.headers
 
 
-def get_headers(path, payload=None):
+def get_headers():
     request_handle = requests.Session()
     creds = {"username": "candig_dev", "password": "password"}
     token = request_handle.post("http://ga4ghdev01.bcgsc.ca:8008/auth/token", json=creds)

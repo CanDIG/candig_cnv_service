@@ -43,14 +43,14 @@ class KeyCloakHandler:
         try:
             decoded = jwt.decode(token,
                                  self.public_key,
-                                 audience=self.configs['OIDC_AUDIENCE'],
+                                 audience=self.config['OIDC_AUDIENCE'],
                                  algorithms=['RS256'])
-            return {"roles": decoded['realm_access']['roles'],
-                    "user": decoded['preferred_username']}
+            return decoded
         except jwt.ExpiredSignatureError:
             return jwt.ExpiredSignature
         except jwt.DecodeError:
-            return jwt.DecodeError
+            print(self.config)
+            raise jwt.DecodeError
 
 
 def create_handler(config):
