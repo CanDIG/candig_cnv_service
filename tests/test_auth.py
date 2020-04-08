@@ -4,6 +4,8 @@ import uuid
 import pytest
 import os
 import sys
+
+import requests
 from unittest.mock import Mock, patch
 
 from werkzeug.datastructures import Headers
@@ -18,6 +20,7 @@ from candig_cnv_service.api import auth
 
 def mocked_authz(*args, **kwargs):
     headers = kwargs["headers"]
+    print(headers)
     pass
 
 
@@ -53,8 +56,6 @@ def test_correct_authorization(mock_session, test_client):
         with app.app.test_request_context(
             headers=goodHeader.headers
         ):
-
-            auth.access.get_access_level()
 
         assert False
 
@@ -178,3 +179,5 @@ def load_test_segment():
     }
 
     return patient_1, sample_1, segment_1, segment_2, segment_3
+
+
