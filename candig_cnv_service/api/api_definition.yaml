@@ -15,22 +15,22 @@ tags:
   - name: researchers
     description: Operations available to regular users
 paths:
-  /cnvariant/patients:
+  /cnvariant/datasets:
     get:
       tags:
         - researchers
       summary: |
-        Lists all patients in the system
-      operationId: candig_cnv_service.api.operations.get_patients
+        Lists all datasets in the system
+      operationId: candig_cnv_service.api.operations.get_datasets
       responses:
         '200':
-          description: List of known patient_ids 
+          description: List of known dataset_ids 
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/patient_id'
+                  $ref: '#/components/schemas/dataset_id'
         '400':
           description: bad input parameter
           content:
@@ -54,25 +54,25 @@ paths:
       tags: 
         - admins
       summary: |
-        Create a new patient
-      operationId: candig_cnv_service.api.operations.add_patients
+        Create a new dataset
+      operationId: candig_cnv_service.api.operations.add_datasets
       description: |
         Adds a new patient to the database
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Patient'
+              $ref: '#/components/schemas/Dataset'
       responses:
         '201':
-          description: New patient created
+          description: New dataset created
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Success'
               example:
                   code: 201
-                  message: Patient successfully created
+                  message: Dataset successfully created
                   
         '400':
           description: Input provided in body does not pass schema validation
@@ -104,29 +104,29 @@ paths:
                 message: Internal Server Error
 
   
-  /cnvariant/patients/samples:
+  /cnvariant/datasets/samples:
     get:
       tags:
         - researchers
       summary: |
-        Lists all sample_ids tied to a patient
+        Lists all sample_ids tied to a dataset
       operationId: candig_cnv_service.api.operations.get_samples
       description: |
-        Returns a list of known samples for a specific patientID
+        Returns a list of known samples for a specific dataset_id
       parameters:
         - in: query
-          name: patient_id
+          name: dataset_id
           description: Patient to be queried
           required: true
           schema:
-            $ref: '#/components/schemas/patient_id'
+            $ref: '#/components/schemas/dataset_id'
       responses:
         '200':
           description: List of known sample_ids
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Patient'
+                $ref: '#/components/schemas/Dataset'
         '400':
           description: bad input parameter
           content:
@@ -160,7 +160,7 @@ paths:
               type: object
               properties:
                 patient_id:
-                  $ref: '#/components/schemas/patient_id'
+                  $ref: '#/components/schemas/dataset_id'
                 sample_id:
                   $ref: '#/components/schemas/sample_id'
       responses:
@@ -204,7 +204,7 @@ paths:
                 message: Internal Server Error
       
                 
-  /cnvariant/patients/samples/cnv:
+  /cnvariant/datasets/samples/cnv:
     get:
       tags:
         - researchers
@@ -220,7 +220,7 @@ paths:
           description: Patient to be queried
           required: true
           schema:
-            $ref: '#/components/schemas/patient_id'
+            $ref: '#/components/schemas/dataset_id'
         - in: query
           name: sample_id
           description: Sample to be queried
@@ -392,13 +392,16 @@ components:
           type: string
                 
     
-    Patient:
+    Dataset:
       type: object
       required: 
-        - patient_id
+        - dataset_id
+        - name
       properties:
-        patient_id:
-          $ref: '#/components/schemas/patient_id'
+        dataset_id:
+          $ref: '#/components/schemas/dataset_id'
+        name:
+          $ref: '#/components/schemas/name'
         samples:
           type: array
           items:
@@ -424,12 +427,12 @@ components:
     CNV:
       type: object
       required:
-        - patient_id
+        - dataset_id
         - sample_id
         - segments
       properties:
-        patient_id:
-          $ref: '#/components/schemas/patient_id'
+        dataset_id:
+          $ref: '#/components/schemas/dataset_id'
         sample_id:
           $ref: '#/components/schemas/sample_id'
         segments:
@@ -438,7 +441,7 @@ components:
             $ref: '#/components/schemas/Segment'
         
           
-    patient_id:
+    dataset_id:
       type: string
       format: uuid
       example: d290f1ee-6c54-4b01-90e6-d701748f0851
@@ -465,6 +468,10 @@ components:
     description:
       type: string
       example: Canadian Sample
+    
+    name:
+      type: string
+      example: TF4CN
     
     start_position:
       type: integer

@@ -9,7 +9,7 @@ import uuid
 from sqlalchemy import exc, or_
 
 from candig_cnv_service.orm import get_session, ORMException
-from candig_cnv_service.orm.models import Patient, Sample, CNV
+from candig_cnv_service.orm.models import Dataset, Sample, CNV
 from candig_cnv_service import orm
 from candig_cnv_service.api.logging import apilog, logger
 from candig_cnv_service.api.logging import structured_log as struct_log
@@ -115,7 +115,7 @@ def _report_write_error(typename, exception, **kwargs):
     return err
 
 
-def get_patients():
+def get_datasets():
     """
     Return all individuals
     """
@@ -123,22 +123,22 @@ def get_patients():
     db_session = get_session()
 
     try:
-        q = db_session.query(Patient)
+        q = db_session.query(Dataset)
     except orm.ORMException as e:
-        err = _report_search_failed("patient", e, patient_id="all")
+        err = _report_search_failed("dataset", e, dataset_id="all")
         return err, 500
 
-    patient_ids_dict = [orm.dump(p) for p in q]
-    return [d["patient_id"] for d in patient_ids_dict], 200
+    dataset_ids_dict = [orm.dump(p) for p in q]
+    return [d["dataset_id"] for d in dataset_ids_dict], 200
 
 
 @apilog
-def get_samples(patient_id, tags=None, description=None):
+def get_samples(dataset_id, tags=None, description=None):
     """
-    Return samples of a patient.
+    Return samples of a dataset.
 
-    :param patient_id: Id of patient
-    :type patient_id = string
+    :param dataset_id: Id of dataset
+    :type dataset_id = string
     :param tags: List of tags
     :type tags: list
 
@@ -148,12 +148,12 @@ def get_samples(patient_id, tags=None, description=None):
 
     db_session = get_session()
 
-    if not patient_id:
-        err = dict(message="No patient_id provided", code=400)
+    if not dataset_id:
+        err = dict(message="No dataset_id provided", code=400)
         return err, 400
 
     try:
-        q = db_session.query(Sample).filter_by(patient_id=patient_id)
+        q = db_session.query(Sample).filter_by(dataset_id=dataset_id)
 
         if tags:
             q = q.filter(or_(*[Sample.tags.contains(tag) for tag in tags]))
@@ -162,13 +162,13 @@ def get_samples(patient_id, tags=None, description=None):
             q = q.filter(Sample.description.contains(description))
 
     except orm.ORMException as e:
-        err = _report_search_failed("sample", e, patient_id=patient_id)
+        err = _report_search_failed("sample", e, dataset_id=dataset_id)
         return err, 500
 
     response = {}
     dump = [orm.dump(p) for p in q]
     for d in dump:
-        response["patient_id"] = d["patient_id"]
+        response["dataset_id"] = d["dataset_id"]
         samples = response.get("samples", [])
         samples_dict = dict(sample_id=d["sample_id"])
         if d.get("tags"):
@@ -183,12 +183,12 @@ def get_samples(patient_id, tags=None, description=None):
 
 @apilog
 def get_segments(
-    patient_id, sample_id, chromosome, start_position, end_position
+    dataset_id, sample_id, chromosome, start_position, end_position
 ):
     """
     Return segments within the specified region
 
-    :param: patient_id: Id of patient
+    :param: dataset_id: Id of dataset
     :type: string
     :param: sample_id: Id of sample
     :type: string
@@ -205,9 +205,9 @@ def get_segments(
 
     db_session = get_session()
     try:
-        validate_uuid_string("patient_id", str(patient_id))
+        validate_uuid_string("dataset_id", str(dataset_id))
     except IdentifierFormatError as e:
-        err = _report_search_failed("cnv", e, patient_id=patient_id,)
+        err = _report_search_failed("cnv", e, dataset_id=dataset_id,)
         return err, 500
 
     if isinstance(sample_id, int):
@@ -222,14 +222,14 @@ def get_segments(
             .filter(
                 CNV.chromosome == chromosome,
                 Sample.sample_id == sample_id,
-                Sample.patient_id == patient_id,
+                Sample.dataset_id == dataset_id,
             )
         )
     except orm.ORMException as e:
         err = _report_search_failed(
             "cnv",
             e,
-            patient_id=patient_id,
+            dataset_id=dataset_id,
             sample_id=sample_id,
             chromosome=chromosome,
         )
@@ -265,10 +265,10 @@ def get_segments(
 
 
 @apilog
-def add_patients(body):
+def add_datasets(body):
     """
-    Creates a new patient following the Patient schema,
-    only adding Patient level information.
+    Creates a new dataset following the Dataset schema,
+    only adding Dataset level information.
 
     :param body: POST request body
     :type body: object
@@ -277,30 +277,30 @@ def add_patients(body):
     :rtype: object, int
 
     .. note::
-        Refer to the OpenAPI Spec for a proper schemas of Patient objects.
+        Refer to the OpenAPI Spec for a proper schemas of Dataset objects.
     """
 
     db_session = get_session()
 
     try:
-        orm_patient = Patient(patient_id=body.get("patient_id"))
+        orm_dataset = Dataset(dataset_id=body.get("dataset_id"))
     except TypeError as e:
-        err = _report_conversion_error("patient", e, **body)
+        err = _report_conversion_error("dataset", e, **body)
         return err, 400
 
     try:
-        db_session.add(orm_patient)
+        db_session.add(orm_dataset)
         db_session.commit()
     except exc.IntegrityError:
         db_session.rollback()
-        err = _report_object_exists("patient: " + body["patient_id"], **body)
+        err = _report_object_exists("dataset: " + body["dataset_id"], **body)
         return err, 400
     except ORMException as e:
         db_session.rollback()
-        err = _report_write_error("patient", e, **body)
+        err = _report_write_error("dataset", e, **body)
         return err, 500
 
-    return {"code": 201, "message": "Patient successfully added"}, 201
+    return {"code": 201, "message": "Dataset successfully added"}, 201
 
 
 @apilog
@@ -323,8 +323,8 @@ def add_samples(body):
 
     print(body)
 
-    if not body.get("patient_id"):
-        err = dict(message="No patient_id provided", code=400)
+    if not body.get("dataset_id"):
+        err = dict(message="No dataset_id provided", code=400)
         return err, 400
 
     if not body.get("sample_id"):
@@ -381,8 +381,8 @@ def add_segments(body):
 
     db_session = get_session()
 
-    if not body.get("patient_id"):
-        err = dict(message="No patient_id provided", code=400)
+    if not body.get("dataset_id"):
+        err = dict(message="No dataset_id provided", code=400)
         return err, 400
 
     if not body.get("sample_id"):

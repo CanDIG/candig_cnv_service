@@ -8,27 +8,27 @@ from candig_cnv_service.orm import Base
 from candig_cnv_service.orm.custom_types import GUID, JsonArray, TimeStamp
 
 
-class Patient(Base):
+class Dataset(Base):
     """
-    SQLAlchemy class representing a Patient
+    SQLAlchemy class representing a Dataset
     """
 
-    __tablename__ = "patient"
+    __tablename__ = "dataset"
 
-    patient_id = Column(GUID(), primary_key=True)
+    dataset_id = Column(GUID(), primary_key=True)
     sample_id = relationship("Sample")
 
 
 class Sample(Base):
     """
-    SQLAlchemy class representing a Sample tied to a Patient
+    SQLAlchemy class representing a Sample tied to a Dataset
     """
 
     __tablename__ = "sample"
 
     sample_id = Column(String(100), primary_key=True)
-    patient_id = Column(
-        GUID(), ForeignKey("patient.patient_id"), nullable=False
+    dataset_id = Column(
+        GUID(), ForeignKey("dataset.dataset_id"), nullable=False
     )
     tags = Column(JsonArray(), default=[])
     description = Column(String(100), unique=True, nullable=False)
