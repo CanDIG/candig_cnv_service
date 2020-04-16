@@ -9,7 +9,7 @@ import requests
 from unittest.mock import Mock, patch
 
 from werkzeug.datastructures import Headers
-from test_data.structs import goodHeader, badHeader
+from test_data.structs import goodHeader, badHeader, access_list
 sys.path.append("{}/{}".format(os.getcwd(), "candig_cnv_service"))
 sys.path.append(os.getcwd())
 
@@ -19,10 +19,14 @@ from candig_cnv_service.api import operations
 from candig_cnv_service.api import auth
 from candig_cnv_service.tools.parser import get_config_dict
 
-def mocked_authz(*args, **kwargs):
-    headers = kwargs["headers"]
-    print(headers)
-    pass
+
+def mocked_authz(*args, **kwargs):    
+    auth_params = kwargs["params"]
+
+    access = access_list[(auth_params["username"], auth_params["issuer"])]
+    response = {}
+    response[auth_params["dataset"]] = access[auth_params["dataset"]]
+    return response
 
 
 @pytest.fixture(name="test_client")
@@ -58,8 +62,9 @@ def test_correct_authorization(mock_session, test_client):
         with app.app.test_request_context(
             headers=goodHeader.headers
         ):
-            auth.access.get_access_level()
-            assert False
+            response = auth.access.get_access_level("TF4CN")
+            print(response)
+            assert response["TF4CN"] == 4
 
 
 def load_test_patients():

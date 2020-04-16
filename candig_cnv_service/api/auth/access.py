@@ -37,7 +37,7 @@ def auth_key(api_key, required_scopes=None):
     return {}
 
 
-def get_access_level():
+def get_access_level(dataset):
     fh = flask.request.headers
     if not fh.get("Authorization"):
         _report_proxy_auth_error("NO AUTH HEADER")
@@ -45,12 +45,16 @@ def get_access_level():
     token = fh["Authorization"].split("Bearer ")[1]
     decode = get_handler().decode_token(token)
 
-    print(decode)
+    
+    payload = {
+        "issuer": decode["iss"],
+        "username": decode["sub"],
+        "dataset": dataset
+    }
 
-    url = "http://0.0.0.0:8885/authz/acess"
+    url = "http://0.0.0.0:8885/authz/access"
     headers = fh
     request_handle = requests.Session()
-    resp = request_handle.get("{}".format(url), headers=headers, timeout=5)
+    resp = request_handle.get("{}".format(url), headers=headers, params=payload, timeout=5)
 
-    # print(resp)
-    pass
+    return resp

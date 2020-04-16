@@ -35,3 +35,15 @@ badHeader = testHeader({
         "Authorization": "Bearer eyJhbGciOiJSUzI1NiIsI",
         "Federation": "true"
     })
+
+access_list = {
+    ("candig_dev", "http://ga4ghdev01.bcgsc.ca:8080/auth/realms/CanDIG"): {
+        "TF4CN": 4,
+        "PROFYLE": 3,
+        "TEST0": 0,
+        "TEST1": 1,
+        "TEST2": 2,
+        "TEST3": 3,
+        "TEST4": 4
+    }
+}
