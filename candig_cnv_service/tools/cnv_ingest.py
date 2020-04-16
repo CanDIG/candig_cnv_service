@@ -11,14 +11,14 @@ from candig_cnv_service.api.exceptions import FileTypeError
 def main(args=None):
     """
     Main script for ingesting CNV files through the CLI. Call this script
-    along with all the arguments needed. patient, sample and file are all
+    along with all the arguments needed. dataset, sample and file are all
     required.
     """
     if args is None:
         args = sys.argv[1:]
 
     parser = argparse.ArgumentParser("Run Candig CNV Ingest Tool")
-    parser.add_argument("patient", help="Patient UUID (must already exist)")
+    parser.add_argument("dataset", help="Dataset UUID (must already exist)")
     parser.add_argument("sample", help="Sample ID (must already exist)")
     parser.add_argument("file", help="Location of CNV file")
     parser.add_argument(
@@ -36,7 +36,7 @@ def main(args=None):
     try:
         CNV = Ingester(
             database=args.database,
-            patient=args.patient,
+            dataset=args.dataset,
             sample=args.sample,
             cnv_file=args.file
             )

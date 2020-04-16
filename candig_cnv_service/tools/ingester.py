@@ -22,25 +22,25 @@ class Ingester:
 
     :param database: Location of the database to ingest the CNV file
     :type database: str
-    :param patient: Patient ID that the CNV file belongs to
-    :type patient: UUID
+    :param dataset: Dataset ID that the CNV file belongs to
+    :type dataset: UUID
     :param sample: Sample ID that the CNV file belongs to
     :type sample: str
     :param cnv_file: Location of the CNV file to ingest
     :type cnv_file: str
     """
-    def __init__(self, database, patient, sample, cnv_file):
+    def __init__(self, database, dataset, sample, cnv_file):
         """Constructor method
         """
         self.db = "sqlite:///" + database
-        self.patient = patient.replace("-", "")
+        self.dataset = dataset.replace("-", "")
         self.sample = sample
         self.cnv_file = cnv_file
         self.file_type = self.get_type()
         self.engine = self.db_setup()
         self.segments = []
         self.required_headers = [
-            'chromosome_number',
+            'chromsome',
             'start_position',
             'end_position',
             'copy_number',
@@ -86,7 +86,7 @@ class Ingester:
             result = connection.execute(
                 "select * from sample where sample_id=\"{}\""
                 .format(self.sample)).first()
-            if self.patient != result[1]:
+            if self.dataset != result[1]:
                 raise KeyExistenceError(self.sample)
         return engine
 
