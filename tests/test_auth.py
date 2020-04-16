@@ -4,6 +4,8 @@ import uuid
 import pytest
 import os
 import sys
+
+import requests
 from unittest.mock import Mock, patch
 
 from werkzeug.datastructures import Headers
@@ -15,9 +17,11 @@ from candig_cnv_service import orm
 from candig_cnv_service.__main__ import app
 from candig_cnv_service.api import operations
 from candig_cnv_service.api import auth
+from candig_cnv_service.tools.parser import get_config_dict
 
 def mocked_authz(*args, **kwargs):
     headers = kwargs["headers"]
+    print(headers)
     pass
 
 
@@ -36,7 +40,8 @@ def load_test_client(db_filename="auth.db"):
     with context:
         orm.init_db("sqlite:///" + db_filename)
         app.app.config["BASE_DL_URL"] = "http://127.0.0.1"
-
+        configs = get_config_dict("./configs/auth.json")
+        auth.create_handler(configs["keycloak"])
     return context
 
 
@@ -53,10 +58,8 @@ def test_correct_authorization(mock_session, test_client):
         with app.app.test_request_context(
             headers=goodHeader.headers
         ):
-
             auth.access.get_access_level()
-
-        assert False
+            assert False
 
 
 def load_test_patients():
@@ -178,3 +181,5 @@ def load_test_segment():
     }
 
     return patient_1, sample_1, segment_1, segment_2, segment_3
+
+
