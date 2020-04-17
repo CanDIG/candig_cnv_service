@@ -57,7 +57,7 @@ paths:
         Create a new dataset
       operationId: candig_cnv_service.api.operations.add_datasets
       description: |
-        Adds a new patient to the database
+        Adds a new dataset to the database
       requestBody:
         content:
           application/json:
@@ -116,7 +116,7 @@ paths:
       parameters:
         - in: query
           name: dataset_id
-          description: Patient to be queried
+          description: Dataset to be queried
           required: true
           schema:
             $ref: '#/components/schemas/dataset_id'
@@ -152,17 +152,19 @@ paths:
       summary: Create a new sample
       operationId: candig_cnv_service.api.operations.add_samples
       description: |
-        Adds a new sample to an existing patient
+        Adds a new sample to an existing dataset
       requestBody:
         content:
           application/json:
             schema:
               type: object
               properties:
-                patient_id:
+                dataset_id:
                   $ref: '#/components/schemas/dataset_id'
                 sample_id:
                   $ref: '#/components/schemas/sample_id'
+                access_level:
+                  $ref: '#/components/schemas/access_level'
       responses:
         '201':
           description: New sample created
@@ -212,12 +214,12 @@ paths:
         Searches for all segments within the specified region
       operationId: candig_cnv_service.api.operations.get_segments
       description: |
-        Passing in a patient ID, sample ID, chromosome number, start and end position will return
+        Passing in a dataset ID, sample ID, chromosome number, start and end position will return
         all known segments within the region.
       parameters:
         - in: query
-          name: patient_id
-          description: Patient to be queried
+          name: dataset_id
+          description: Dataset to be queried
           required: true
           schema:
             $ref: '#/components/schemas/dataset_id'
@@ -273,14 +275,14 @@ paths:
                 code: 403
                 message: Authorization error
         '404':
-          description: PatientID not found
+          description: DatasetID not found
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
               example:
                 code: 404
-                message: PatientID not found
+                message: DatasetID not found
         '500':
           description: Internal Server Error
           content:

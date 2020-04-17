@@ -3,15 +3,12 @@ Auth module for service
 """
 
 import flask
-
-import jwt
-# from jwt.algorithms import RSAAlgorithm
-# from keycloak import KeycloakOpenID
 import requests
 
 from candig_cnv_service.api.logging import structured_log as struct_log
 from candig_cnv_service.api.logging import logger
 from candig_cnv_service.api.auth import get_handler
+
 
 def _report_proxy_auth_error(key, **kwargs):
     """
@@ -37,24 +34,59 @@ def auth_key(api_key, required_scopes=None):
     return {}
 
 
-def get_access_level(dataset):
+def decode():
     fh = flask.request.headers
     if not fh.get("Authorization"):
         _report_proxy_auth_error("NO AUTH HEADER")
 
     token = fh["Authorization"].split("Bearer ")[1]
-    decode = get_handler().decode_token(token)
+    decoded = get_handler().decode_token(token)
+    return decoded
 
-    
+
+def get_access_from_authz(dataset):
+    decoded = decode()
     payload = {
-        "issuer": decode["iss"],
-        "username": decode["sub"],
+        "issuer": decoded["iss"],
+        "username": decoded["sub"],
         "dataset": dataset
     }
 
     url = "http://0.0.0.0:8885/authz/access"
-    headers = fh
+    headers = flask.request.headers
     request_handle = requests.Session()
-    resp = request_handle.get("{}".format(url), headers=headers, params=payload, timeout=5)
+    resp = request_handle.get(
+        "{}".format(url),
+        headers=headers,
+        params=payload,
+        timeout=5
+        )
 
     return resp
+
+
+class Access_Handler:
+    def __init__(self):
+        self.alist = {}
+
+    def verify(self, username, level, dataset):
+        authz_level = self.get_level(username, dataset)
+        if (level >= authz_level):
+            return True
+        return False
+
+    def get_level(self, username, dataset):
+        try:
+            user = self.alist.get(username)
+            level = user[dataset]
+            # At this point there is access level
+            # information. Need to make sure it's
+            # still valid
+            decode()
+            return level
+
+        except KeyError:
+            # No info on user or dataset
+            access = get_access_from_authz(dataset)
+            self.alist[username] = access
+            return access[dataset]

@@ -151,7 +151,7 @@ def get_samples(dataset_id, tags=None, description=None):
     if not dataset_id:
         err = dict(message="No dataset_id provided", code=400)
         return err, 400
-
+    
     try:
         q = db_session.query(Sample).filter_by(dataset_id=dataset_id)
 
