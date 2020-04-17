@@ -49,7 +49,6 @@ class KeyCloakHandler:
         except jwt.ExpiredSignatureError:
             return jwt.ExpiredSignature
         except jwt.DecodeError:
-            print(self.config)
             raise jwt.DecodeError
 
 

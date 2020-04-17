@@ -4,11 +4,13 @@ Auth module for service
 
 import flask
 import requests
+import jwt
 
 from candig_cnv_service.api.logging import structured_log as struct_log
 from candig_cnv_service.api.logging import logger
 from candig_cnv_service.api.auth import get_handler
 
+_ACCESSHANDLER = None
 
 def _report_proxy_auth_error(key, **kwargs):
     """
@@ -69,20 +71,23 @@ class Access_Handler:
     def __init__(self):
         self.alist = {}
 
-    def verify(self, username, level, dataset):
-        authz_level = self.get_level(username, dataset)
-        if (level >= authz_level):
-            return True
-        return False
+    def verify(self, level, dataset):
+        try:
+            decoded = decode()
+            # TODO invalidate data if token is expired
+            user_level = self.get_level(decoded["sub"], dataset)
+            if (user_level >= level):
+                print(self.alist)
+                return [True]
+        except jwt.DecodeError:
+            return [False, "Decode"]
+        return [False, "Level"]
 
     def get_level(self, username, dataset):
         try:
-            user = self.alist.get(username)
+            user = self.alist[username]
             level = user[dataset]
-            # At this point there is access level
-            # information. Need to make sure it's
-            # still valid
-            decode()
+            
             return level
 
         except KeyError:
@@ -90,3 +95,13 @@ class Access_Handler:
             access = get_access_from_authz(dataset)
             self.alist[username] = access
             return access[dataset]
+
+def get_access_handler():
+    global _ACCESSHANDLER
+    if not _ACCESSHANDLER:
+        raise HandlerError
+    return _ACCESSHANDLER
+
+def create_access_handler():
+    global _ACCESSHANDLER
+    _ACCESSHANDLER = Access_Handler()

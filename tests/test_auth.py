@@ -52,7 +52,7 @@ def load_test_client(db_filename="auth.db"):
 @patch('candig_cnv_service.api.auth.access.requests.Session.get', side_effect=mocked_authz)
 def test_correct_authorization(mock_session, test_client):
     """
-    Test add_patients method
+    Test access level verification
     """
 
     context = test_client
@@ -62,9 +62,50 @@ def test_correct_authorization(mock_session, test_client):
         with app.app.test_request_context(
             headers=goodHeader.headers
         ):
-            response = auth.access.get_access_level("TF4CN")
-            print(response)
-            assert response["TF4CN"] == 4
+            auth.access.create_access_handler()
+            ah = auth.access.get_access_handler()
+            res = ah.verify(dataset="TF4CN", level=4)
+            assert res == True
+
+
+@patch('candig_cnv_service.api.auth.access.requests.Session.get', side_effect=mocked_authz)
+def test_invalid_token_decode(mock_session, test_client):
+    """
+    Test access level verification
+    """
+
+    context = test_client
+    patient_1, patient_2, patient_3 = load_test_patients()
+
+    with context:
+        with app.app.test_request_context(
+            headers=badHeader.headers
+        ):
+            auth.access.create_access_handler()
+            ah = auth.access.get_access_handler()
+            res = ah.verify(dataset="TF4CN", level=4)
+            assert res[0] == False
+            assert res[1] == "Decode"
+
+
+@patch('candig_cnv_service.api.auth.access.requests.Session.get', side_effect=mocked_authz)
+def test_invalid_authz_level(mock_session, test_client):
+    """
+    Test access level verification
+    """
+
+    context = test_client
+    patient_1, patient_2, patient_3 = load_test_patients()
+
+    with context:
+        with app.app.test_request_context(
+            headers=goodHeader.headers
+        ):
+            auth.access.create_access_handler()
+            ah = auth.access.get_access_handler()
+            res = ah.verify(dataset="PROFYLE", level=4)
+            assert res[0] == False
+            assert res[1] == "Level"
 
 
 def load_test_patients():
