@@ -8,7 +8,7 @@ import jwt
 
 from candig_cnv_service.api.logging import structured_log as struct_log
 from candig_cnv_service.api.logging import logger
-from candig_cnv_service.api.auth import get_handler
+from candig_cnv_service.api.auth import get_kc_handler
 from candig_cnv_service.api.exceptions import HandlerError
 
 _ACCESSHANDLER = None

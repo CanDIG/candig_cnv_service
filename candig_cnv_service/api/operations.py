@@ -184,7 +184,6 @@ def get_samples(dataset_id, tags=None, description=None):
         err = _report_search_failed("sample", e, dataset_id=dataset_id)
         return err, 500
 
-    auth = get_access_handler()
     response = {}
     dump = [orm.dump(p) for p in q]
     for d in dump:
@@ -192,6 +191,7 @@ def get_samples(dataset_id, tags=None, description=None):
         samples = response.get("samples", [])
         samples_dict = dict(sample_id=d["sample_id"])
         if APP.config["auth_flag"]:
+            auth = get_access_handler()
             authorized = auth.verify(
                 level=samples_dict["access_level"],
                 dataset=response["dataset_id"]

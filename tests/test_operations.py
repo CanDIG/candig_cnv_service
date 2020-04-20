@@ -28,7 +28,7 @@ def load_test_client(db_filename="operations.db"):
     with context:
         orm.init_db("sqlite:///" + db_filename)
         app.app.config["BASE_DL_URL"] = "http://127.0.0.1"
-
+        app.app.config["auth_flag"] = False
     return context
 
 
