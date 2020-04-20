@@ -5,6 +5,7 @@ import datetime
 
 import flask
 import uuid
+import jwt
 
 from sqlalchemy import exc, or_
 
@@ -14,6 +15,7 @@ from candig_cnv_service import orm
 from candig_cnv_service.api.logging import apilog, logger
 from candig_cnv_service.api.logging import structured_log as struct_log
 from candig_cnv_service.api.exceptions import IdentifierFormatError
+from candig_cnv_service.api.auth.access import get_access_handler
 
 APP = flask.current_app
 
@@ -115,6 +117,23 @@ def _report_write_error(typename, exception, **kwargs):
     return err
 
 
+def _report_decode_error(exception, **kwargs):
+    """
+    Generate standard log message + request error for error:
+    Error decoding Auth token
+    :param typename: name of type involved
+    :param exception: exception thrown by ORM
+    :param **kwargs: arbitrary keyword parameters
+    :return: Connexion Error() type to return
+    """
+    report = "Unable to decode authorization token"
+    logger().error(
+        struct_log(action=report, exception=str(exception), **kwargs)
+    )
+    err = dict(message=report, code=401)
+    return err
+
+
 def get_datasets():
     """
     Return all individuals
@@ -151,7 +170,7 @@ def get_samples(dataset_id, tags=None, description=None):
     if not dataset_id:
         err = dict(message="No dataset_id provided", code=400)
         return err, 400
-    
+
     try:
         q = db_session.query(Sample).filter_by(dataset_id=dataset_id)
 
@@ -165,18 +184,35 @@ def get_samples(dataset_id, tags=None, description=None):
         err = _report_search_failed("sample", e, dataset_id=dataset_id)
         return err, 500
 
+    auth = get_access_handler()
     response = {}
     dump = [orm.dump(p) for p in q]
     for d in dump:
         response["dataset_id"] = d["dataset_id"]
         samples = response.get("samples", [])
         samples_dict = dict(sample_id=d["sample_id"])
-        if d.get("tags"):
-            samples_dict["tags"] = d["tags"]
-        samples_dict["created"] = d["created"]
-        samples_dict["description"] = d["description"]
-        samples.append(samples_dict)
-        response["samples"] = samples
+        if APP.config["auth_flag"]:
+            authorized = auth.verify(
+                level=samples_dict["access_level"],
+                dataset=response["dataset_id"]
+                )
+            if authorized[0]:
+                if d.get("tags"):
+                    samples_dict["tags"] = d["tags"]
+                samples_dict["created"] = d["created"]
+                samples_dict["description"] = d["description"]
+                samples.append(samples_dict)
+                response["samples"] = samples
+            elif authorized[1] == "Decode":
+                err = _report_decode_error(jwt.DecodeError)
+                return err, 401
+        else:
+            if d.get("tags"):
+                samples_dict["tags"] = d["tags"]
+            samples_dict["created"] = d["created"]
+            samples_dict["description"] = d["description"]
+            samples.append(samples_dict)
+            response["samples"] = samples
 
     return response, 200
 

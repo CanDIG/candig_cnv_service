@@ -28,6 +28,7 @@ def main(args=None):
         choices=["DEBUG", "INFO", "WARN", "ERROR", "CRITICAL"],
     )
     parser.add_argument("--name", default="candig_service")
+    parser.add_argument("--noauth", default=True)
 
     args, _ = parser.parse_known_args()
     try:
@@ -43,15 +44,19 @@ def main(args=None):
     app.app.logger.setLevel(numeric_loglevel)
 
     app.app.config["name"] = args.name
-    app.app.config["self"] = "http://{}/{}".format(args.host, args.port)
+    app.app.config["self"] = "http://{}:{}".format(args.host, args.port)
 
     define("dbfile", default=args.database)
     candig_cnv_service.orm.init_db()
     db_session = candig_cnv_service.orm.get_session()
 
-    app.app.config.update(get_config_dict(args.auth))
+    app.app.config["auth_flag"] = args.noauth
 
-    auth.create_handler(app.app.config["keycloak"])
+    if not args.noauth:
+        print("In auth")
+        app.app.config.update(get_config_dict(args.auth))
+        auth.create_kc_handler(app.app.config["keycloak"])
+        auth.access.create_access_handler()
 
     @app.app.teardown_appcontext
     def shutdown_session(exception=None):

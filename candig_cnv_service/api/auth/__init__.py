@@ -52,13 +52,13 @@ class KeyCloakHandler:
             raise jwt.DecodeError
 
 
-def create_handler(config):
+def create_kc_handler(config):
     global _HANDLER
     _HANDLER = KeyCloakHandler(config)
 
 
-def get_handler():
+def get_kc_handler():
     global _HANDLER
     if not _HANDLER:
-        raise HandlerError
+        raise HandlerError("Keycloak")
     return _HANDLER

@@ -9,8 +9,10 @@ import jwt
 from candig_cnv_service.api.logging import structured_log as struct_log
 from candig_cnv_service.api.logging import logger
 from candig_cnv_service.api.auth import get_handler
+from candig_cnv_service.api.exceptions import HandlerError
 
 _ACCESSHANDLER = None
+
 
 def _report_proxy_auth_error(key, **kwargs):
     """
@@ -87,7 +89,7 @@ class Access_Handler:
         try:
             user = self.alist[username]
             level = user[dataset]
-            
+
             return level
 
         except KeyError:
@@ -96,11 +98,13 @@ class Access_Handler:
             self.alist[username] = access
             return access[dataset]
 
+
 def get_access_handler():
     global _ACCESSHANDLER
     if not _ACCESSHANDLER:
-        raise HandlerError
+        raise HandlerError("Access")
     return _ACCESSHANDLER
+
 
 def create_access_handler():
     global _ACCESSHANDLER

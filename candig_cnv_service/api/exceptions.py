@@ -56,6 +56,6 @@ class HandlerError(Exception):
     """
     Custom exception for uninitialized Keycloak Handler
     """
-    def __init__(self):
-        message = ("Keycloak Handler not initialized")
+    def __init__(self, handler):
+        message = ("{} Handler not initialized".format(handler))
         super().__init__(message)
