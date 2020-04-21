@@ -548,9 +548,9 @@ def load_test_samples():
 
     dataset_1, _, _ = load_test_datasets()
 
-    sample_1 = {"sample_id": samp(5), "dataset_id": dataset_1["dataset_id"], "description": dataset_1["dataset_id"] + "sample_1"}
+    sample_1 = {"sample_id": samp(5), "dataset_id": dataset_1["dataset_id"], "description": dataset_1["dataset_id"] + "sample_1", "access_level": 2}
 
-    sample_2 = {"sample_id": samp(5), "dataset_id": dataset_1["dataset_id"], "description": dataset_1["dataset_id"] + "sample_2"}
+    sample_2 = {"sample_id": samp(5), "dataset_id": dataset_1["dataset_id"], "description": dataset_1["dataset_id"] + "sample_2", "access_level": 3}
 
     sample_3 = {"sample_id": samp(5)}
 
@@ -572,6 +572,7 @@ def load_test_samples_with_tags():
         "dataset_id": dataset_1["dataset_id"],
         "tags": ["Canadian", "Ovarian"],
         "description": "sample_1",
+        "access_level": 2
     }
 
     sample_2 = {
@@ -579,6 +580,7 @@ def load_test_samples_with_tags():
         "dataset_id": dataset_1["dataset_id"],
         "tags": ["Canadian", "Liver", "Adult"],
         "description": "sample_2",
+        "access_level": 3
     }
 
     return sample_1, sample_2, dataset_1

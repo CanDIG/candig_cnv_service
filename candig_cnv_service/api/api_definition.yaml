@@ -414,6 +414,7 @@ components:
       required:
         - sample_id
         - access_level
+        - description
       properties:
         sample_id:
           $ref: '#/components/schemas/sample_id'

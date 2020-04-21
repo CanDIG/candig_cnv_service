@@ -31,6 +31,7 @@ class Sample(Base):
         GUID(), ForeignKey("dataset.dataset_id"), nullable=False
     )
     tags = Column(JsonArray(), default=[])
+    access_level = Column(Integer)
     description = Column(String(100), unique=True, nullable=False)
     created = Column(TimeStamp())
     cnv_id = relationship("CNV")

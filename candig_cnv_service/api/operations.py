@@ -370,6 +370,11 @@ def add_samples(body):
     if not body.get("description"):
         err = dict(message="No description provided", code=400)
         return err, 400
+    
+    if not body.get("access_level"):
+        err = dict(message="No access level provided", code=400)
+        return err, 400
+    
 
     body["created"] = datetime.datetime.utcnow()
 
