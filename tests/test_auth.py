@@ -46,6 +46,7 @@ def load_test_client(db_filename="auth.db"):
         app.app.config["BASE_DL_URL"] = "http://127.0.0.1"
         configs = get_config_dict("./configs/auth.json")
         auth.create_handler(configs["keycloak"])
+        app.app.config["auth_flag"] = True
     return context
 
 
@@ -56,7 +57,7 @@ def test_correct_authorization(mock_session, test_client):
     """
 
     context = test_client
-    patient_1, patient_2, patient_3 = load_test_patients()
+    dataset_1, dataset_2, dataset_3 = load_test_datasets()
 
     with context:
         with app.app.test_request_context(
@@ -75,7 +76,7 @@ def test_invalid_token_decode(mock_session, test_client):
     """
 
     context = test_client
-    patient_1, patient_2, patient_3 = load_test_patients()
+    dataset_1, dataset_2, dataset_3 = load_test_datasets()
 
     with context:
         with app.app.test_request_context(
@@ -95,7 +96,7 @@ def test_invalid_authz_level(mock_session, test_client):
     """
 
     context = test_client
-    patient_1, patient_2, patient_3 = load_test_patients()
+    dataset_1, dataset_2, dataset_3 = load_test_datasets()
 
     with context:
         with app.app.test_request_context(
@@ -108,27 +109,133 @@ def test_invalid_authz_level(mock_session, test_client):
             assert res[1] == "Level"
 
 
-def load_test_patients():
+@patch('candig_cnv_service.api.auth.access.requests.Session.get', side_effect=mocked_authz)
+def test_get_samples(test_client):
     """
-    Load some mock patient data
+    Test 'get_samples' method
     """
-    patient_1_id = uuid.uuid4().hex
-    patient_2_id = uuid.uuid4().hex
-    patient_3_id = 1
 
-    test_patient_1 = {
-        "patient_id": patient_1_id,
+    context = test_client
+
+    sample_1, sample_2, _, dataset_1 = load_test_samples()
+    sample_3, sample_4, _, dataset_2 = load_test_samples()
+
+    with context:
+        _, code = operations.add_datasets(dataset_1)
+        assert code == 201
+        _, code = operations.add_datasets(dataset_2)
+        assert code == 201
+
+        _, code = operations.add_samples(sample_1)
+        assert code == 201
+        _, code = operations.add_samples(sample_2)
+        assert code == 201
+
+        _, code = operations.add_samples(sample_3)
+        assert code == 201
+        _, code = operations.add_samples(sample_4)
+        assert code == 201
+
+        response, code = operations.get_samples(dataset_1["dataset_id"])
+        samples = [s["sample_id"] for s in response["samples"]]
+        descriptions = [s["description"] for s in response["samples"]]
+        assert code == 200
+        assert len(samples) == 2
+        assert sample_1["sample_id"] in samples
+        assert sample_1["description"] in descriptions
+        assert sample_2["sample_id"] in samples
+        assert sample_2["description"] in descriptions
+
+
+@patch('candig_cnv_service.api.auth.access.requests.Session.get', side_effect=mocked_authz)
+def test_get_samples_using_description(test_client):
+    """
+    Test 'get_samples' method using a description
+    """
+
+    context = test_client
+
+    sample_1, sample_2, _, dataset_1 = load_test_samples()
+    sample_3, sample_4, _, dataset_2 = load_test_samples()
+
+    with context:
+        _, code = operations.add_datasets(dataset_1)
+        assert code == 201
+        _, code = operations.add_datasets(dataset_2)
+        assert code == 201
+
+        _, code = operations.add_samples(sample_1)
+        assert code == 201
+        _, code = operations.add_samples(sample_2)
+        assert code == 201
+
+        _, code = operations.add_samples(sample_3)
+        assert code == 201
+        _, code = operations.add_samples(sample_4)
+        assert code == 201
+
+        response, code = operations.get_samples(dataset_1["dataset_id"], description=sample_1["description"])
+        assert code == 200
+        assert response["dataset_id"] == sample_1["dataset_id"] 
+
+
+@patch('candig_cnv_service.api.auth.access.requests.Session.get', side_effect=mocked_authz)
+def test_get_samples_with_tags(test_client):
+    """
+    Test 'get_samples' using tags
+    """
+    context = test_client
+    sample_1, sample_2, dataset_1 = load_test_samples_with_tags()
+    dataset_id = dataset_1["dataset_id"]
+    tags = sample_1["tags"]
+
+    with context:
+        _, code = operations.add_datasets(dataset_1)
+        assert code == 201
+
+        _, code = operations.add_samples(sample_1)
+        assert code == 201
+        _, code = operations.add_samples(sample_2)
+        assert code == 201
+
+        response, code = operations.get_samples(dataset_id, tags)
+        assert code == 200
+        assert response["dataset_id"] == dataset_id
+        assert len(response["samples"]) == 2
+
+        response, code = operations.get_samples(dataset_id, ["Adult"])
+        assert code == 200
+        assert response["dataset_id"] == dataset_id
+        assert len(response["samples"]) == 1
+
+        response, code = operations.get_samples(
+            dataset_id, ["Non existent tag"]
+        )
+        assert code == 200
+        assert not response
+
+
+def load_test_datasets():
+    """
+    Load some mock dataset data
+    """
+    dataset_1_id = uuid.uuid4().hex
+    dataset_2_id = uuid.uuid4().hex
+    dataset_3_id = 1
+
+    test_dataset_1 = {
+        "dataset_id": dataset_1_id,
     }
 
-    test_patient_2 = {
-        "patient_id": patient_2_id,
+    test_dataset_2 = {
+        "dataset_id": dataset_2_id,
     }
 
-    test_patient_3 = {
-        "patient_id": patient_3_id,
+    test_dataset_3 = {
+        "dataset_id": dataset_3_id,
     }
 
-    return test_patient_1, test_patient_2, test_patient_3
+    return test_dataset_1, test_dataset_2, test_dataset_3
 
 
 def load_test_samples():
@@ -139,15 +246,15 @@ def load_test_samples():
         random.choice(string.ascii_lowercase) for i in range(x)
     )
 
-    patient_1, _, _ = load_test_patients()
+    dataset_1, _, _ = load_test_datasets()
 
-    sample_1 = {"sample_id": samp(5), "patient_id": patient_1["patient_id"], "description": patient_1["patient_id"] + "sample_1"}
+    sample_1 = {"sample_id": samp(5), "dataset_id": dataset_1["dataset_id"], "description": dataset_1["dataset_id"] + "sample_1"}
 
-    sample_2 = {"sample_id": samp(5), "patient_id": patient_1["patient_id"], "description": patient_1["patient_id"] + "sample_2"}
+    sample_2 = {"sample_id": samp(5), "dataset_id": dataset_1["dataset_id"], "description": dataset_1["dataset_id"] + "sample_2"}
 
     sample_3 = {"sample_id": samp(5)}
 
-    return sample_1, sample_2, sample_3, patient_1
+    return sample_1, sample_2, sample_3, dataset_1
 
 
 def load_test_samples_with_tags():
@@ -158,23 +265,23 @@ def load_test_samples_with_tags():
         random.choice(string.ascii_lowercase) for i in range(x)
     )
 
-    patient_1, _, _ = load_test_patients()
+    dataset_1, _, _ = load_test_datasets()
 
     sample_1 = {
         "sample_id": samp(5),
-        "patient_id": patient_1["patient_id"],
+        "dataset_id": dataset_1["dataset_id"],
         "tags": ["Canadian", "Ovarian"],
         "description": "sample_1",
     }
 
     sample_2 = {
         "sample_id": samp(5),
-        "patient_id": patient_1["patient_id"],
+        "dataset_id": dataset_1["dataset_id"],
         "tags": ["Canadian", "Liver", "Adult"],
         "description": "sample_2",
     }
 
-    return sample_1, sample_2, patient_1
+    return sample_1, sample_2, dataset_1
 
 
 def load_test_segment():
@@ -182,10 +289,10 @@ def load_test_segment():
     Return some mock segments data
     """
 
-    sample_1, _, _, patient_1 = load_test_samples()
+    sample_1, _, _, dataset_1 = load_test_samples()
 
     segment_1 = {
-        "patient_id": patient_1["patient_id"],
+        "dataset_id": dataset_1["dataset_id"],
         "sample_id": sample_1["sample_id"],
         "segments": [
             {
@@ -199,7 +306,7 @@ def load_test_segment():
     }
 
     segment_2 = {
-        "patient_id": patient_1["patient_id"],
+        "dataset_id": dataset_1["dataset_id"],
         "sample_id": sample_1["sample_id"],
         "segments": [
             {
@@ -213,7 +320,7 @@ def load_test_segment():
     }
 
     segment_3 = {
-        "patient_id": patient_1["patient_id"],
+        "dataset_id": dataset_1["dataset_id"],
         "sample_id": sample_1["sample_id"],
         "segments": [
             {
@@ -226,6 +333,6 @@ def load_test_segment():
         ],
     }
 
-    return patient_1, sample_1, segment_1, segment_2, segment_3
+    return dataset_1, sample_1, segment_1, segment_2, segment_3
 
 
