@@ -210,8 +210,6 @@ def get_samples(dataset_id, tags=None, description=None):
         samples_dict = dict(sample_id=d["sample_id"])
         if APP.config["auth_flag"]:
             dataset = orm.dump(q0[0])
-            print("---- \n\n")
-            print(dataset)
             auth = get_access_handler()
             authorized = auth.verify(
                 level=d["access_level"],
@@ -280,8 +278,6 @@ def get_segments(
             dataset = orm.dump(q1[0])
             sample = orm.dump(q2[0])
 
-            print(dataset)
-            print("---- \n\n\n")
             auth = get_access_handler()
             authorized = auth.verify(
                 level=sample["access_level"],

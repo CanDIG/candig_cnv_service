@@ -313,7 +313,7 @@ def test_get_segment_auth(test_client):
             )
             
             assert code == 200
-            assert len(response) == 27
+            assert len(response) == 2
 
 
 def load_test_datasets():
@@ -402,7 +402,7 @@ def load_test_segment():
         "sample_id": sample_1["sample_id"],
         "segments": [
             {
-                "chromosome_number": "5",
+                "chromosome": "5",
                 "start_position": 12523,
                 "end_position": 23425,
                 "copy_number": -0.16,
@@ -416,7 +416,7 @@ def load_test_segment():
         "sample_id": sample_1["sample_id"],
         "segments": [
             {
-                "chromosome_number": "5",
+                "chromosome": "5",
                 "start_position": 23426,
                 "end_position": 34326,
                 "copy_number": -0.16,
@@ -430,7 +430,7 @@ def load_test_segment():
         "sample_id": sample_1["sample_id"],
         "segments": [
             {
-                "chromosome_number": "5",
+                "chromosome": "5",
                 "start_position": 34327,
                 "end_position": 44296,
                 "copy_number": -0.16,
