@@ -14,7 +14,7 @@ from candig_cnv_service.orm.models import Dataset, Sample, CNV
 from candig_cnv_service import orm
 from candig_cnv_service.api.logging import apilog, logger
 from candig_cnv_service.api.logging import structured_log as struct_log
-from candig_cnv_service.api.exceptions import IdentifierFormatError
+from candig_cnv_service.api.exceptions import IdentifierFormatError, AuthorizationError
 from candig_cnv_service.api.auth.access import get_access_handler
 
 APP = flask.current_app
@@ -134,6 +134,23 @@ def _report_decode_error(exception, **kwargs):
     return err
 
 
+def _report_authz_error(exception, **kwargs):
+    """
+    Generate standard log message + request error for error:
+    Insufficient access rights
+    :param typename: name of type involved
+    :param exception: exception thrown by ORM
+    :param **kwargs: arbitrary keyword parameters
+    :return: Connexion Error() type to return
+    """
+    report = "Data queried exceeds user authorization level"
+    logger().error(
+        struct_log(action=report, exception=str(exception), **kwargs)
+    )
+    err = dict(message=report, code=403)
+    return err
+
+
 def get_datasets():
     """
     Return all individuals
@@ -250,6 +267,30 @@ def get_segments(
         sample_id = str(sample_id)
     if isinstance(chromosome, int):
         chromosome = str(chromosome)
+
+    if APP.config["auth_flag"]:
+        try:
+            q = db_session.query(Sample).filter_by(dataset_id=dataset_id)
+
+            sample = orm.dump(q[0])
+            auth = get_access_handler()
+            authorized = auth.verify(
+                level=sample["access_level"],
+                dataset=dataset_id
+                )
+            if authorized[0]:
+                pass
+            elif authorized[1] == "Decode":
+                err = _report_decode_error(jwt.DecodeError)
+                return err, 401
+            elif authorized[2] == "Access":
+                err = _report_authz_error(AuthorizationError)
+                return err, 403
+            
+
+        except orm.ORMException as e:
+            err = _report_search_failed("sample", e, dataset_id=dataset_id)
+            return err, 500
 
     try:
         q = (

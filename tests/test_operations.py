@@ -491,6 +491,7 @@ def test_get_segment(test_client):
         assert len(response) == 2
 
 
+
 def test_get_segments_invalid_data(test_client):
     """
     Test 'get_segments' using invalid or non-existent data

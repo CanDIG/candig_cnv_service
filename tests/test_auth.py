@@ -121,30 +121,33 @@ def test_get_samples(test_client):
     sample_3, sample_4, _, dataset_2 = load_test_samples()
 
     with context:
-        _, code = operations.add_datasets(dataset_1)
-        assert code == 201
-        _, code = operations.add_datasets(dataset_2)
-        assert code == 201
+        with app.app.test_request_context(
+            headers=goodHeader.headers
+        ):
+            _, code = operations.add_datasets(dataset_1)
+            assert code == 201
+            _, code = operations.add_datasets(dataset_2)
+            assert code == 201
 
-        _, code = operations.add_samples(sample_1)
-        assert code == 201
-        _, code = operations.add_samples(sample_2)
-        assert code == 201
+            _, code = operations.add_samples(sample_1)
+            assert code == 201
+            _, code = operations.add_samples(sample_2)
+            assert code == 201
 
-        _, code = operations.add_samples(sample_3)
-        assert code == 201
-        _, code = operations.add_samples(sample_4)
-        assert code == 201
+            _, code = operations.add_samples(sample_3)
+            assert code == 201
+            _, code = operations.add_samples(sample_4)
+            assert code == 201
 
-        response, code = operations.get_samples(dataset_1["dataset_id"])
-        samples = [s["sample_id"] for s in response["samples"]]
-        descriptions = [s["description"] for s in response["samples"]]
-        assert code == 200
-        assert len(samples) == 2
-        assert sample_1["sample_id"] in samples
-        assert sample_1["description"] in descriptions
-        assert sample_2["sample_id"] in samples
-        assert sample_2["description"] in descriptions
+            response, code = operations.get_samples(dataset_1["dataset_id"])
+            samples = [s["sample_id"] for s in response["samples"]]
+            descriptions = [s["description"] for s in response["samples"]]
+            assert code == 200
+            assert len(samples) == 2
+            assert sample_1["sample_id"] in samples
+            assert sample_1["description"] in descriptions
+            assert sample_2["sample_id"] in samples
+            assert sample_2["description"] in descriptions
 
 
 @patch('candig_cnv_service.api.auth.access.requests.Session.get', side_effect=mocked_authz)
@@ -159,24 +162,27 @@ def test_get_samples_using_description(test_client):
     sample_3, sample_4, _, dataset_2 = load_test_samples()
 
     with context:
-        _, code = operations.add_datasets(dataset_1)
-        assert code == 201
-        _, code = operations.add_datasets(dataset_2)
-        assert code == 201
+        with app.app.test_request_context(
+            headers=goodHeader.headers
+        ):
+            _, code = operations.add_datasets(dataset_1)
+            assert code == 201
+            _, code = operations.add_datasets(dataset_2)
+            assert code == 201
 
-        _, code = operations.add_samples(sample_1)
-        assert code == 201
-        _, code = operations.add_samples(sample_2)
-        assert code == 201
+            _, code = operations.add_samples(sample_1)
+            assert code == 201
+            _, code = operations.add_samples(sample_2)
+            assert code == 201
 
-        _, code = operations.add_samples(sample_3)
-        assert code == 201
-        _, code = operations.add_samples(sample_4)
-        assert code == 201
+            _, code = operations.add_samples(sample_3)
+            assert code == 201
+            _, code = operations.add_samples(sample_4)
+            assert code == 201
 
-        response, code = operations.get_samples(dataset_1["dataset_id"], description=sample_1["description"])
-        assert code == 200
-        assert response["dataset_id"] == sample_1["dataset_id"] 
+            response, code = operations.get_samples(dataset_1["dataset_id"], description=sample_1["description"])
+            assert code == 200
+            assert response["dataset_id"] == sample_1["dataset_id"] 
 
 
 @patch('candig_cnv_service.api.auth.access.requests.Session.get', side_effect=mocked_authz)
@@ -190,29 +196,126 @@ def test_get_samples_with_tags(test_client):
     tags = sample_1["tags"]
 
     with context:
-        _, code = operations.add_datasets(dataset_1)
-        assert code == 201
+        with app.app.test_request_context(
+            headers=goodHeader.headers
+        ):
+            _, code = operations.add_datasets(dataset_1)
+            assert code == 201
 
-        _, code = operations.add_samples(sample_1)
-        assert code == 201
-        _, code = operations.add_samples(sample_2)
-        assert code == 201
+            _, code = operations.add_samples(sample_1)
+            assert code == 201
+            _, code = operations.add_samples(sample_2)
+            assert code == 201
 
-        response, code = operations.get_samples(dataset_id, tags)
-        assert code == 200
-        assert response["dataset_id"] == dataset_id
-        assert len(response["samples"]) == 2
+            response, code = operations.get_samples(dataset_id, tags)
+            assert code == 200
+            assert response["dataset_id"] == dataset_id
+            assert len(response["samples"]) == 2
 
-        response, code = operations.get_samples(dataset_id, ["Adult"])
-        assert code == 200
-        assert response["dataset_id"] == dataset_id
-        assert len(response["samples"]) == 1
+            response, code = operations.get_samples(dataset_id, ["Adult"])
+            assert code == 200
+            assert response["dataset_id"] == dataset_id
+            assert len(response["samples"]) == 1
 
-        response, code = operations.get_samples(
-            dataset_id, ["Non existent tag"]
-        )
-        assert code == 200
-        assert not response
+            response, code = operations.get_samples(
+                dataset_id, ["Non existent tag"]
+            )
+            assert code == 200
+            assert not response
+
+
+@patch('candig_cnv_service.api.auth.access.requests.Session.get', side_effect=mocked_authz)
+def test_get_segment_auth(test_client):
+    """
+    Test 'get_segments' method
+    """
+
+    context = test_client
+
+    dataset_1, sample_1, segment_1, segment_2, segment_3 = load_test_segment()
+    dataset_2, sample_2, segment_4, segment_5, segment_6 = load_test_segment()
+
+    dataset_id = segment_1["dataset_id"]
+    sample_id = segment_1["sample_id"]
+    chromosome = segment_1["segments"][0]["chromosome"]
+    start_position = segment_1["segments"][0]["start_position"]
+    end_position = segment_1["segments"][0]["end_position"]
+    copy_number = segment_1["segments"][0]["copy_number"]
+    copy_number_ploidy_corrected = segment_1["segments"][0][
+        "copy_number_ploidy_corrected"
+    ]
+
+    with context:
+        with app.app.test_request_context(
+            headers=goodHeader.headers
+        ):
+            response, code = operations.add_datasets(dataset_1)
+            assert code == 201
+            assert response["code"] == 201
+            response, code = operations.add_datasets(dataset_2)
+            assert code == 201
+            assert response["code"] == 201
+
+            response, code = operations.add_samples(sample_1)
+            assert code == 201
+            assert response["code"] == 201
+            response, code = operations.add_samples(sample_2)
+            assert code == 201
+            assert response["code"] == 201
+
+            response, code = operations.add_segments(segment_1)
+            assert code == 201
+            assert response["code"] == 201
+
+            response, code = operations.add_segments(segment_2)
+            assert code == 201
+            assert response["code"] == 201
+
+            response, code = operations.add_segments(segment_3)
+            assert code == 201
+            assert response["code"] == 201
+
+            response, code = operations.add_segments(segment_4)
+            assert code == 201
+            assert response["code"] == 201
+
+            response, code = operations.add_segments(segment_5)
+            assert code == 201
+            assert response["code"] == 201
+
+            response, code = operations.add_segments(segment_6)
+            assert code == 201
+            assert response["code"] == 201
+
+            response, code = operations.get_segments(
+                dataset_id,
+                sample_id,
+                chromosome,
+                start_position,
+                end_position,
+            )
+            assert len(response) == 1
+            assert code == 200
+
+            assert response[0]["chromosome"] == chromosome
+            assert response[0]["start_position"] == start_position
+            assert response[0]["end_position"] == end_position
+            assert response[0]["copy_number"] == copy_number
+            assert (
+                response[0]["copy_number_ploidy_corrected"]
+                == copy_number_ploidy_corrected
+            )
+
+            response, code = operations.get_segments(
+                dataset_id,
+                sample_id,
+                chromosome,
+                start_position=12522,
+                end_position=34326,
+            )
+            
+            assert code == 200
+            assert len(response) == 27
 
 
 def load_test_datasets():
