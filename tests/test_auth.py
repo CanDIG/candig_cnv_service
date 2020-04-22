@@ -45,7 +45,7 @@ def load_test_client(db_filename="auth.db"):
         orm.init_db("sqlite:///" + db_filename)
         app.app.config["BASE_DL_URL"] = "http://127.0.0.1"
         configs = get_config_dict("./configs/auth.json")
-        auth.create_handler(configs["keycloak"])
+        auth.create_kc_handler(configs["keycloak"])
         app.app.config["auth_flag"] = True
     return context
 
@@ -66,7 +66,7 @@ def test_correct_authorization(mock_session, test_client):
             auth.access.create_access_handler()
             ah = auth.access.get_access_handler()
             res = ah.verify(dataset="TF4CN", level=4)
-            assert res == True
+            assert res[0] == True
 
 
 @patch('candig_cnv_service.api.auth.access.requests.Session.get', side_effect=mocked_authz)
@@ -143,11 +143,9 @@ def test_get_samples(test_client):
             samples = [s["sample_id"] for s in response["samples"]]
             descriptions = [s["description"] for s in response["samples"]]
             assert code == 200
-            assert len(samples) == 2
+            assert len(samples) == 1
             assert sample_1["sample_id"] in samples
             assert sample_1["description"] in descriptions
-            assert sample_2["sample_id"] in samples
-            assert sample_2["description"] in descriptions
 
 
 @patch('candig_cnv_service.api.auth.access.requests.Session.get', side_effect=mocked_authz)
@@ -210,9 +208,9 @@ def test_get_samples_with_tags(test_client):
             response, code = operations.get_samples(dataset_id, tags)
             assert code == 200
             assert response["dataset_id"] == dataset_id
-            assert len(response["samples"]) == 2
+            assert len(response["samples"]) == 1
 
-            response, code = operations.get_samples(dataset_id, ["Adult"])
+            response, code = operations.get_samples(dataset_id, ["Canadian"])
             assert code == 200
             assert response["dataset_id"] == dataset_id
             assert len(response["samples"]) == 1
@@ -328,14 +326,17 @@ def load_test_datasets():
 
     test_dataset_1 = {
         "dataset_id": dataset_1_id,
+        "name": "TEST1"
     }
 
     test_dataset_2 = {
         "dataset_id": dataset_2_id,
+        "name": "TEST2"
     }
 
     test_dataset_3 = {
         "dataset_id": dataset_3_id,
+        "name": "TEST3"
     }
 
     return test_dataset_1, test_dataset_2, test_dataset_3
@@ -351,9 +352,9 @@ def load_test_samples():
 
     dataset_1, _, _ = load_test_datasets()
 
-    sample_1 = {"sample_id": samp(5), "dataset_id": dataset_1["dataset_id"], "description": dataset_1["dataset_id"] + "sample_1"}
+    sample_1 = {"sample_id": samp(5), "dataset_id": dataset_1["dataset_id"], "description": dataset_1["dataset_id"] + "sample_1", "access_level": 1}
 
-    sample_2 = {"sample_id": samp(5), "dataset_id": dataset_1["dataset_id"], "description": dataset_1["dataset_id"] + "sample_2"}
+    sample_2 = {"sample_id": samp(5), "dataset_id": dataset_1["dataset_id"], "description": dataset_1["dataset_id"] + "sample_2", "access_level": 2}
 
     sample_3 = {"sample_id": samp(5)}
 
@@ -375,6 +376,7 @@ def load_test_samples_with_tags():
         "dataset_id": dataset_1["dataset_id"],
         "tags": ["Canadian", "Ovarian"],
         "description": "sample_1",
+        "access_level": 1,
     }
 
     sample_2 = {
@@ -382,6 +384,7 @@ def load_test_samples_with_tags():
         "dataset_id": dataset_1["dataset_id"],
         "tags": ["Canadian", "Liver", "Adult"],
         "description": "sample_2",
+        "access_level": 2,
     }
 
     return sample_1, sample_2, dataset_1

@@ -526,14 +526,17 @@ def load_test_datasets():
 
     test_dataset_1 = {
         "dataset_id": dataset_1_id,
+        "name": "TEST1"
     }
 
     test_dataset_2 = {
         "dataset_id": dataset_2_id,
+        "name": "TEST2"
     }
 
     test_dataset_3 = {
         "dataset_id": dataset_3_id,
+        "name": "TEST3"
     }
 
     return test_dataset_1, test_dataset_2, test_dataset_3

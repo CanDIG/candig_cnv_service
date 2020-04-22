@@ -189,6 +189,7 @@ def get_samples(dataset_id, tags=None, description=None):
         return err, 400
 
     try:
+        q0 = db_session.query(Dataset).filter_by(dataset_id=dataset_id)
         q = db_session.query(Sample).filter_by(dataset_id=dataset_id)
 
         if tags:
@@ -208,10 +209,13 @@ def get_samples(dataset_id, tags=None, description=None):
         samples = response.get("samples", [])
         samples_dict = dict(sample_id=d["sample_id"])
         if APP.config["auth_flag"]:
+            dataset = orm.dump(q0[0])
+            print("---- \n\n")
+            print(dataset)
             auth = get_access_handler()
             authorized = auth.verify(
-                level=samples_dict["access_level"],
-                dataset=response["dataset_id"]
+                level=d["access_level"],
+                dataset=orm.dump(q0[0])["name"]
                 )
             if authorized[0]:
                 if d.get("tags"):
@@ -270,13 +274,18 @@ def get_segments(
 
     if APP.config["auth_flag"]:
         try:
-            q = db_session.query(Sample).filter_by(dataset_id=dataset_id)
+            q1 = db_session.query(Dataset).filter_by(dataset_id=dataset_id)
+            q2 = db_session.query(Sample).filter_by(dataset_id=dataset_id)
 
-            sample = orm.dump(q[0])
+            dataset = orm.dump(q1[0])
+            sample = orm.dump(q2[0])
+
+            print(dataset)
+            print("---- \n\n\n")
             auth = get_access_handler()
             authorized = auth.verify(
                 level=sample["access_level"],
-                dataset=dataset_id
+                dataset=dataset["name"]
                 )
             if authorized[0]:
                 pass
@@ -360,7 +369,7 @@ def add_datasets(body):
     db_session = get_session()
 
     try:
-        orm_dataset = Dataset(dataset_id=body.get("dataset_id"))
+        orm_dataset = Dataset(**body)
     except TypeError as e:
         err = _report_conversion_error("dataset", e, **body)
         return err, 400

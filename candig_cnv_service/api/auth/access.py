@@ -44,7 +44,7 @@ def decode():
         _report_proxy_auth_error("NO AUTH HEADER")
 
     token = fh["Authorization"].split("Bearer ")[1]
-    decoded = get_handler().decode_token(token)
+    decoded = get_kc_handler().decode_token(token)
     return decoded
 
 

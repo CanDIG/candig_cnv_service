@@ -17,6 +17,7 @@ class Dataset(Base):
 
     dataset_id = Column(GUID(), primary_key=True)
     sample_id = relationship("Sample")
+    name = Column(String(100))
 
 
 class Sample(Base):
