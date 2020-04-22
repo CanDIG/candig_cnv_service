@@ -57,7 +57,6 @@ def test_correct_authorization(mock_session, test_client):
     """
 
     context = test_client
-    dataset_1, dataset_2, dataset_3 = load_test_datasets()
 
     with context:
         with app.app.test_request_context(
@@ -76,7 +75,7 @@ def test_invalid_token_decode(mock_session, test_client):
     """
 
     context = test_client
-    dataset_1, dataset_2, dataset_3 = load_test_datasets()
+    dataset_1 = load_test_datasets(1)
 
     with context:
         with app.app.test_request_context(
@@ -96,7 +95,7 @@ def test_invalid_authz_level(mock_session, test_client):
     """
 
     context = test_client
-    dataset_1, dataset_2, dataset_3 = load_test_datasets()
+    dataset_1 = load_test_datasets(1)
 
     with context:
         with app.app.test_request_context(
@@ -117,8 +116,8 @@ def test_get_samples(test_client):
 
     context = test_client
 
-    sample_1, sample_2, _, dataset_1 = load_test_samples()
-    sample_3, sample_4, _, dataset_2 = load_test_samples()
+    samples_ds1, dataset_1 = load_test_samples(1)
+    samples_ds2, dataset_2 = load_test_samples(2)
 
     with context:
         with app.app.test_request_context(
@@ -129,23 +128,23 @@ def test_get_samples(test_client):
             _, code = operations.add_datasets(dataset_2)
             assert code == 201
 
-            _, code = operations.add_samples(sample_1)
+            _, code = operations.add_samples(samples_ds1[0])
             assert code == 201
-            _, code = operations.add_samples(sample_2)
-            assert code == 201
-
-            _, code = operations.add_samples(sample_3)
-            assert code == 201
-            _, code = operations.add_samples(sample_4)
+            _, code = operations.add_samples(samples_ds1[1])
             assert code == 201
 
-            response, code = operations.get_samples(dataset_1["dataset_id"])
+            _, code = operations.add_samples(samples_ds2[0])
+            assert code == 201
+            _, code = operations.add_samples(samples_ds2[1])
+            assert code == 201
+
+            response, code = operations.get_samples(dataset_2["dataset_id"])
             samples = [s["sample_id"] for s in response["samples"]]
             descriptions = [s["description"] for s in response["samples"]]
             assert code == 200
-            assert len(samples) == 1
-            assert sample_1["sample_id"] in samples
-            assert sample_1["description"] in descriptions
+            assert len(samples) == 2
+            assert samples_ds2[0]["sample_id"] in samples
+            assert samples_ds2[0]["description"] in descriptions
 
 
 @patch('candig_cnv_service.api.auth.access.requests.Session.get', side_effect=mocked_authz)
@@ -156,8 +155,8 @@ def test_get_samples_using_description(test_client):
 
     context = test_client
 
-    sample_1, sample_2, _, dataset_1 = load_test_samples()
-    sample_3, sample_4, _, dataset_2 = load_test_samples()
+    samples_ds1, dataset_1 = load_test_samples(1)
+    samples_ds2, dataset_2 = load_test_samples(2)
 
     with context:
         with app.app.test_request_context(
@@ -168,19 +167,19 @@ def test_get_samples_using_description(test_client):
             _, code = operations.add_datasets(dataset_2)
             assert code == 201
 
-            _, code = operations.add_samples(sample_1)
+            _, code = operations.add_samples(samples_ds1[0])
             assert code == 201
-            _, code = operations.add_samples(sample_2)
-            assert code == 201
-
-            _, code = operations.add_samples(sample_3)
-            assert code == 201
-            _, code = operations.add_samples(sample_4)
+            _, code = operations.add_samples(samples_ds1[1])
             assert code == 201
 
-            response, code = operations.get_samples(dataset_1["dataset_id"], description=sample_1["description"])
+            _, code = operations.add_samples(samples_ds2[0])
+            assert code == 201
+            _, code = operations.add_samples(samples_ds2[1])
+            assert code == 201
+
+            response, code = operations.get_samples(dataset_1["dataset_id"], description=samples_ds1[0]["description"])
             assert code == 200
-            assert response["dataset_id"] == sample_1["dataset_id"] 
+            assert response["dataset_id"] == samples_ds1[0]["dataset_id"] 
 
 
 @patch('candig_cnv_service.api.auth.access.requests.Session.get', side_effect=mocked_authz)
@@ -230,8 +229,8 @@ def test_get_segment_auth(test_client):
 
     context = test_client
 
-    dataset_1, sample_1, segment_1, segment_2, segment_3 = load_test_segment()
-    dataset_2, sample_2, segment_4, segment_5, segment_6 = load_test_segment()
+    dataset_1, sample_1, segment_1, segment_2, segment_3 = load_test_segment(1, 1)
+    dataset_2, sample_2, segment_4, segment_5, segment_6 = load_test_segment(2, 2)
 
     dataset_id = segment_1["dataset_id"]
     sample_id = segment_1["sample_id"]
@@ -316,7 +315,7 @@ def test_get_segment_auth(test_client):
             assert len(response) == 2
 
 
-def load_test_datasets():
+def load_test_datasets(dataset):
     """
     Load some mock dataset data
     """
@@ -339,10 +338,16 @@ def load_test_datasets():
         "name": "TEST3"
     }
 
-    return test_dataset_1, test_dataset_2, test_dataset_3
+    datasets = {
+        1: test_dataset_1,
+        2: test_dataset_2,
+        3: test_dataset_3
+    }
+
+    return datasets[dataset]
 
 
-def load_test_samples():
+def load_test_samples(ds):
     """
     Return some mock sample data
     """
@@ -350,15 +355,15 @@ def load_test_samples():
         random.choice(string.ascii_lowercase) for i in range(x)
     )
 
-    dataset_1, _, _ = load_test_datasets()
+    dataset = load_test_datasets(ds)
 
-    sample_1 = {"sample_id": samp(5), "dataset_id": dataset_1["dataset_id"], "description": dataset_1["dataset_id"] + "sample_1", "access_level": 1}
+    sample_1 = {"sample_id": samp(5), "dataset_id": dataset["dataset_id"], "description": dataset["dataset_id"] + "sample_1", "access_level": 1}
 
-    sample_2 = {"sample_id": samp(5), "dataset_id": dataset_1["dataset_id"], "description": dataset_1["dataset_id"] + "sample_2", "access_level": 2}
+    sample_2 = {"sample_id": samp(5), "dataset_id": dataset["dataset_id"], "description": dataset["dataset_id"] + "sample_2", "access_level": 2}
 
     sample_3 = {"sample_id": samp(5)}
 
-    return sample_1, sample_2, sample_3, dataset_1
+    return [sample_1, sample_2, sample_3], dataset
 
 
 def load_test_samples_with_tags():
@@ -369,7 +374,7 @@ def load_test_samples_with_tags():
         random.choice(string.ascii_lowercase) for i in range(x)
     )
 
-    dataset_1, _, _ = load_test_datasets()
+    dataset_1 = load_test_datasets(1)
 
     sample_1 = {
         "sample_id": samp(5),
@@ -390,16 +395,17 @@ def load_test_samples_with_tags():
     return sample_1, sample_2, dataset_1
 
 
-def load_test_segment():
+def load_test_segment(ds, smpl):
     """
     Return some mock segments data
     """
 
-    sample_1, _, _, dataset_1 = load_test_samples()
+    samples, dataset = load_test_samples(ds)
+    sample = samples[smpl-1]
 
     segment_1 = {
-        "dataset_id": dataset_1["dataset_id"],
-        "sample_id": sample_1["sample_id"],
+        "dataset_id": dataset["dataset_id"],
+        "sample_id": sample["sample_id"],
         "segments": [
             {
                 "chromosome": "5",
@@ -412,8 +418,8 @@ def load_test_segment():
     }
 
     segment_2 = {
-        "dataset_id": dataset_1["dataset_id"],
-        "sample_id": sample_1["sample_id"],
+        "dataset_id": dataset["dataset_id"],
+        "sample_id": sample["sample_id"],
         "segments": [
             {
                 "chromosome": "5",
@@ -426,8 +432,8 @@ def load_test_segment():
     }
 
     segment_3 = {
-        "dataset_id": dataset_1["dataset_id"],
-        "sample_id": sample_1["sample_id"],
+        "dataset_id": dataset["dataset_id"],
+        "sample_id": sample["sample_id"],
         "segments": [
             {
                 "chromosome": "5",
@@ -439,6 +445,6 @@ def load_test_segment():
         ],
     }
 
-    return dataset_1, sample_1, segment_1, segment_2, segment_3
+    return dataset, sample, segment_1, segment_2, segment_3
 
 
