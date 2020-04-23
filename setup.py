@@ -27,6 +27,7 @@ setuptools.setup(
     test_suite='tests',
     url="https://github.com/CanDIG/candig_cnv_service",
     packages=setuptools.find_packages(),
+    include_package_data=True,
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
