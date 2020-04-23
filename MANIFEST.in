@@ -1,0 +1,2 @@
+include candig_cnv_service/api/api_definition.yaml
+include README.md

@@ -15,6 +15,8 @@ with open("requirements.txt") as requirements:
         version_pin = line.split()[0]
         install_requires.append(version_pin)
 
+data_files = [("api", ["candig_cnv_service/api/api_definition.yaml"])]
+
 setuptools.setup(
     name="candig-cnv-service", # Replace with your own username
     version="0.0.1",
@@ -27,6 +29,7 @@ setuptools.setup(
     test_suite='tests',
     url="https://github.com/CanDIG/candig_cnv_service",
     packages=setuptools.find_packages(),
+    data_files=data_files,
     include_package_data=True,
     classifiers=[
         "Programming Language :: Python :: 3",
