@@ -2,6 +2,8 @@
 Auth module for service
 """
 
+from datetime import datetime
+
 import flask
 import requests
 import jwt
@@ -77,7 +79,7 @@ class Access_Handler:
         try:
             decoded = decode()
             # TODO invalidate data if token is expired
-            user_level = self.get_level(decoded["sub"], dataset)
+            user_level = self.get_level(decoded["sub"], dataset, decoded["exp"])
             if (user_level >= level):
                 print(self.alist)
                 return [True]
@@ -85,9 +87,14 @@ class Access_Handler:
             return [False, "Decode"]
         return [False, "Level"]
 
-    def get_level(self, username, dataset):
+    def get_level(self, username, dataset, time):
         try:
             user = self.alist[username]
+            # Check expiration if user exists
+            if user["time"] > datetime.now():
+                print("Expired")
+                quit()
+
             level = user[dataset]
 
             return level
@@ -95,7 +102,7 @@ class Access_Handler:
         except KeyError:
             # No info on user or dataset
             access = get_access_from_authz(dataset)
-            self.alist[username] = access
+            self.alist[username] = {"authz": access, "time": time, "valid": True}
             return access[dataset]
 
 

@@ -75,7 +75,6 @@ def test_invalid_token_decode(mock_session, test_client):
     """
 
     context = test_client
-    dataset_1 = load_test_datasets(1)
 
     with context:
         with app.app.test_request_context(
@@ -83,9 +82,28 @@ def test_invalid_token_decode(mock_session, test_client):
         ):
             auth.access.create_access_handler()
             ah = auth.access.get_access_handler()
+            # ah.alist["candig_dev"] = {"authz": {"TF4CN": 4}, "time": 1587624812, "valid": False}
             res = ah.verify(dataset="TF4CN", level=4)
             assert res[0] == False
             assert res[1] == "Decode"
+
+
+@patch('candig_cnv_service.api.auth.access.requests.Session.get', side_effect=mocked_authz)
+def test_expired_cache(mock_session, test_client):
+    """
+    Test access level verification
+    """
+
+    context = test_client
+
+    with context:
+        with app.app.test_request_context(
+            headers=goodHeader.headers
+        ):
+            auth.access.create_access_handler()
+            ah = auth.access.get_access_handler()
+            res = ah.verify(dataset="TF4CN", level=4)
+            assert res[0] == False
 
 
 @patch('candig_cnv_service.api.auth.access.requests.Session.get', side_effect=mocked_authz)
