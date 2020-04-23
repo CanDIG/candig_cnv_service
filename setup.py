@@ -30,6 +30,7 @@ setuptools.setup(
     url="https://github.com/CanDIG/candig_cnv_service",
     packages=setuptools.find_packages(),
     data_files=data_files,
+    include_package_data=True,
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
