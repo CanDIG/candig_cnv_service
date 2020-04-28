@@ -21,14 +21,14 @@ def main(args=None):
     parser.add_argument("--host", default="0.0.0.0")
     parser.add_argument("--database", default="./data/cnv_service.db")
     parser.add_argument("--logfile", default="./log/cnv_service.log")
-    parser.add_argument("--auth", default="./configs/auth.json")
+    parser.add_argument("--services", default="./configs/services.json")
     parser.add_argument(
         "--loglevel",
         default="INFO",
         choices=["DEBUG", "INFO", "WARN", "ERROR", "CRITICAL"],
     )
     parser.add_argument("--name", default="candig_service")
-    parser.add_argument("--noauth", default=True)
+    parser.add_argument("--noauth", default=False)
 
     args, _ = parser.parse_known_args()
     try:
@@ -54,9 +54,10 @@ def main(args=None):
 
     if not args.noauth:
         print("In auth")
-        app.app.config.update(get_config_dict(args.auth))
-        auth.create_kc_handler(app.app.config["keycloak"])
-        auth.access.create_access_handler()
+        app.app.config.update(get_config_dict(args.services))
+        print(app.app.config)
+        #auth.create_kc_handler(app.app.config["keycloak"])
+        #auth.access.create_access_handler()
 
     @app.app.teardown_appcontext
     def shutdown_session(exception=None):

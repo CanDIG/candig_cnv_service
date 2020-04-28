@@ -4,7 +4,9 @@ The ingester module provides methods to ingest entire CNV files
 
 import os
 import sys
+import json
 
+import requests
 from sqlalchemy.exc import IntegrityError
 
 sys.path.append(os.getcwd())
@@ -16,7 +18,7 @@ from candig_cnv_service.orm import init_db, get_engine  # noqa: E402
 from candig_cnv_service.orm.models import CNV  # noqa: E402
 
 
-class Ingester:
+class Ingester_CNV:
     """
     This is a collection of methods to facilitate ingesting entire CNV files
 
@@ -167,3 +169,57 @@ class Ingester:
                     )
                 except IntegrityError as IE:
                     print(IE.args, IE.params)
+
+
+class Ingester:
+    """
+    This is a collection of methods to facilitate ingesting data files
+    to add Datasets or Samples to the CNV service.
+
+    :param database: Location of the database to ingest the data file
+    :type database: str
+    :param datafile: Location of the data file to ingest
+    :type datafile: str
+    :param dss: Address of local CanDIG Datasets Service
+    :type dss: str
+
+    """
+
+    def __init__(self, database, datafile, dss):
+        """Constructor method
+        """
+        self.db = "sqlite:///" + database
+        self.df = datafile
+        self.dss = dss
+        self.data = []
+
+    def read_datasets(self):
+        with open(self.df) as ds:
+            data = json.load(ds)
+            self.data.extend(data["datasets"])
+
+
+    def verify_datasets(self):
+
+        self.read_datasets()
+        dataset_ids = [dataset["dataset_id"] for dataset in self.data]
+
+        url = "http://{}/datasets/verify".format(self.dss)
+        args = {"datasets": dataset_ids}
+        request_handle = requests.Session()
+        headers = {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            "content-type": "application/json",
+            "federation": "false",
+            "Authorization": "Bearer " + "iZTFhLTRiZDItODdk"
+            }
+
+        resp = request_handle.post("{}".format(url), headers=headers, json=args)
+
+        try:
+            # print(resp.status_code, resp.json())
+            print(resp.json())
+        except json.JSONDecodeError:
+            print(resp.status_code, resp.text)
+            
