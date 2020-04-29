@@ -65,7 +65,13 @@ def main(args=None):
         ingest.dataset_protocol()
 
     elif args.mode == 2:
-        pass
+        config = get_config_dict("./configs/services.json")
+        dss = config["candig_services"]["datasets"]
+        ingest = Ingester(
+            database=args.database,
+            datafile=args.file,
+            dss=dss)
+        ingest.sample_protocol()
     elif args.mode == 3:
         try:
             CNV = Ingester_CNV(

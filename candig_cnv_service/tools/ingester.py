@@ -5,6 +5,7 @@ The ingester module provides methods to ingest entire CNV files
 import os
 import sys
 import json
+import datetime
 
 import requests
 from sqlalchemy.exc import IntegrityError
@@ -193,10 +194,11 @@ class Ingester:
         self.dss = dss
         self.data = []
 
-    def read_datasets(self):
+    def read_data(self, mode):
         with open(self.df) as ds:
             data = json.load(ds)
-            self.data.extend(data["datasets"])
+            self.data.extend(data[mode])
+
 
 
     def verify_datasets(self):
@@ -239,7 +241,27 @@ class Ingester:
             quit()
         except json.JSONDecodeError:
             print(resp.status_code, resp.text)
-            
+
+    def add_samples(self):
+        orm.init_db(self.db)
+        session = orm.get_session()
+        try:
+            session.bulk_save_objects(
+                [
+                    Sample(
+                        dataset_id=sample["dataset_id"],
+                        sample_id=sample["sample_id"],
+                        access_level=sample["access_level"],
+                        description=sample["description"],
+                        created=datetime.datetime.utcnow()
+                    )
+                    for sample in self.data
+                ],
+            )
+            session.commit()
+        except IntegrityError as IE:
+            print(IE.args, IE.params)
+
     def add_datasets(self, datasets):
         orm.init_db(self.db)
         session = orm.get_session()
@@ -259,6 +281,10 @@ class Ingester:
 
 
     def dataset_protocol(self):
-        self.read_datasets()
+        self.read_data("datasets")
         v = self.verify_datasets()
         self.add_datasets(v)
+
+    def sample_protocol(self):
+        self.read_data("samples")
+        self.add_samples()
