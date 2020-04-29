@@ -202,9 +202,9 @@ class Ingester:
     def verify_datasets(self):
 
         self.read_datasets()
-        dataset_ids = [dataset["dataset_id"] for dataset in self.data]
+        dataset_ids = [{"dataset_id":dataset["dataset_id"], "name":dataset["name"]} for dataset in self.data]
 
-        url = "http://{}/datasets/verify".format(self.dss)
+        url = "http://{}/v2/datasets/verify".format(self.dss)
         args = {"datasets": dataset_ids}
         request_handle = requests.Session()
         headers = {
