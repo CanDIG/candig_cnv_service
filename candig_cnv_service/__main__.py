@@ -17,7 +17,7 @@ def main(args=None):
         args = sys.argv[1:]
 
     parser = argparse.ArgumentParser("Run Candig CNV  service")
-    parser.add_argument("--port", default=8870)
+    parser.add_argument("--port", default=8880)
     parser.add_argument("--host", default="0.0.0.0")
     parser.add_argument("--database", default="./data/cnv_service.db")
     parser.add_argument("--logfile", default="./log/cnv_service.log")

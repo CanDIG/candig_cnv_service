@@ -10,6 +10,7 @@ from parser import get_config_dict
 from candig_cnv_service.api.exceptions import FileTypeError
 
 
+
 def main(args=None):
     """
     Main script for ingesting CNV files through the CLI. Call this script
@@ -61,7 +62,7 @@ def main(args=None):
             database=args.database,
             datafile=args.file,
             dss=dss)
-        ingest.verify_datasets()
+        ingest.dataset_protocol()
 
     elif args.mode == 2:
         pass

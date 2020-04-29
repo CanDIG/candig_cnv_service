@@ -15,8 +15,8 @@ from candig_cnv_service.api.exceptions import FileTypeError  # noqa: E402
 from candig_cnv_service.api.exceptions import KeyExistenceError  # noqa: E402
 from candig_cnv_service.api.exceptions import HeaderError  # noqa: E402
 from candig_cnv_service.orm import init_db, get_engine  # noqa: E402
-from candig_cnv_service.orm.models import CNV  # noqa: E402
-
+from candig_cnv_service.orm.models import CNV, Sample, Dataset  # noqa: E402
+from candig_cnv_service import orm
 
 class Ingester_CNV:
     """
@@ -201,9 +201,7 @@ class Ingester:
 
     def verify_datasets(self):
 
-        self.read_datasets()
-        dataset_ids = [{"dataset_id":dataset["dataset_id"], "name":dataset["name"]} for dataset in self.data]
-
+        dataset_ids = self.data
         url = "http://{}/v2/datasets/verify".format(self.dss)
         args = {"datasets": dataset_ids}
         request_handle = requests.Session()
@@ -215,11 +213,52 @@ class Ingester:
             "Authorization": "Bearer " + "iZTFhLTRiZDItODdk"
             }
 
-        resp = request_handle.post("{}".format(url), headers=headers, json=args)
-
         try:
-            # print(resp.status_code, resp.json())
-            print(resp.json())
+            resp = request_handle.post("{}".format(url), headers=headers, json=args)
+            verified = resp.json()
+
+            if len(verified) != len(dataset_ids):
+                print(
+                    "Not able to verify all datasets.\n"
+                    "Verfied and Adding: {}".format(verified)
+                )
+
+            verified_datasets = []
+            for v in verified:
+                for dataset in dataset_ids:
+                    if dataset["dataset_id"] == v:
+                        verified_datasets.append(dataset)
+            
+            return verified_datasets
+        except requests.exceptions.ConnectionError:
+            print(
+                "Cannot establish connection to local Dataset service at "
+                "{}.\nMake sure it is operational and try again.".
+                format(url)
+            )
+            quit()
         except json.JSONDecodeError:
             print(resp.status_code, resp.text)
             
+    def add_datasets(self, datasets):
+        orm.init_db(self.db)
+        session = orm.get_session()
+        try:
+            session.bulk_save_objects(
+                [
+                    Dataset(
+                        dataset_id=dataset["dataset_id"],
+                        name=dataset["name"],
+                    )
+                    for dataset in datasets
+                ],
+            )
+            session.commit()
+        except IntegrityError as IE:
+            print(IE.args, IE.params)
+
+
+    def dataset_protocol(self):
+        self.read_datasets()
+        v = self.verify_datasets()
+        self.add_datasets(v)
