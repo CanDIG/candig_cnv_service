@@ -6,6 +6,7 @@ import logging
 import pkg_resources
 
 import connexion
+from prometheus_flask_exporter import PrometheusMetrics
 
 from tornado.options import define
 import candig_cnv_service.orm
@@ -89,6 +90,7 @@ def configure_app():
 app = configure_app()
 
 application = app.app
+metrics = PrometheusMetrics(application)
 
 if __name__ == "__main__":
     main()
